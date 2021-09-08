@@ -1,33 +1,28 @@
 package it.unipa.bigdata.dmi.lda.config;
 
+import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.sql.SparkSession;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
+import org.apache.log4j.Level;
+
 public class SparkConfig {
-    @Value("LDA")
-    private String appName;
+    private String appName = "LDA";
 
-    @Value("${spark.masterUri}")
-    private String masterUri;
+    private String masterUri = "local[*]";
 
-    @Value("${spark.driver.memory}")
-    private String driverMemory;
-    @Value("${spark.driver.cores}")
-    private String driverCores;
+    private String driverMemory = "4G";
 
-    @Value("${spark.executor.memory}") //ONLY IN CLUSTER MODE
-    private String executorMemory;
-    @Value("${spark.executor.cores}")  //ONLY IN CLUSTER MODE
-    private String executorCores;
-    @Value("${spark.executor.instances}")  //ONLY IN CLUSTER MODE
-    private String executorInstances;
+    private String driverCores = "4";
 
-    @Bean
+    private String logLevel = Level.ERROR.toString();
+
+    //ONLY IN CLUSTER MODE
+    private String executorMemory = "28G";
+    //ONLY IN CLUSTER MODE
+    private String executorCores = "9";
+    //ONLY IN CLUSTER MODE
+    private String executorInstances = "2";
+
     public SparkConf conf() {
         return new SparkConf()
                 .setAppName(appName)
@@ -45,18 +40,35 @@ public class SparkConfig {
                 ;
     }
 
-    @Bean
-    public SparkSession sparkSession() {
-        return SparkSession.builder()
-                .master(masterUri)
-                .appName(appName)
-                .sparkContext(sc().sc())
-                .getOrCreate();
+    public String getAppName() {
+        return appName;
     }
 
-    @Bean
-    public JavaSparkContext sc() {
-        return new JavaSparkContext(conf());
+    public String getMasterUri() {
+        return masterUri;
     }
 
+    public String getDriverMemory() {
+        return driverMemory;
+    }
+
+    public String getDriverCores() {
+        return driverCores;
+    }
+
+    public String getExecutorMemory() {
+        return executorMemory;
+    }
+
+    public String getExecutorCores() {
+        return executorCores;
+    }
+
+    public String getExecutorInstances() {
+        return executorInstances;
+    }
+
+    public String getLogLevel() {
+        return logLevel;
+    }
 }
