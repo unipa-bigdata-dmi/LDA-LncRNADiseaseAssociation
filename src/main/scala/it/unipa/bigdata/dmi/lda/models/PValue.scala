@@ -26,6 +26,7 @@ class PValue extends ModelInterface {
   override def confusionMatrix(): Dataset[Row] = {
     val scores = loadPredictions().select(col("prediction"), col("gs"))
       .groupBy("gs", "prediction").agg(count("gs").as("count"))
+      .sort(col("gs").desc, col("prediction").desc)
     println("------------\npValue Confusion Matrix")
     scores.show(false)
     println("------------")

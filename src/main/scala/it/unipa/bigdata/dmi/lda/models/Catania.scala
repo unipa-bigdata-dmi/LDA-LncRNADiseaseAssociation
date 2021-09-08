@@ -24,8 +24,10 @@ class Catania extends ModelInterface{
   }
 
   override def confusionMatrix(): DataFrame ={
-    val scores = loadPredictions().select(col("prediction"),when(col("gs").equalTo(1.0), true).otherwise(false).as("gs"))
-                                  .groupBy("gs","prediction").agg(count("gs").as("count"))
+    val scores = loadPredictions()
+        .select(col("prediction"),when(col("gs").equalTo(1.0), true).otherwise(false).as("gs"))
+        .groupBy("gs","prediction").agg(count("gs").as("count"))
+        .sort(col("gs").desc, col("prediction").desc)
     println("------------\nCatania Confusion Matrix")
     scores.show(false)
     println("------------")
