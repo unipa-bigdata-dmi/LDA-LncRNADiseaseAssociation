@@ -1,13 +1,16 @@
 package it.unipa.bigdata.dmi.lda;
 
-import it.unipa.bigdata.dmi.lda.models.Centrality;
+import it.unipa.bigdata.dmi.lda.models.ModelFactory;
 
 public class LncRNADiseaseApplication {
-    private Centrality centrality = new Centrality();
 
     public static void main(String[] args) {
-        LncRNADiseaseApplication application = new LncRNADiseaseApplication();
-        application.centrality.test();
+        ModelFactory.getModel(ModelFactory.Model.Catania).auc();
+        ModelFactory.getModel(ModelFactory.Model.Catania).confusionMatrix();
+        ModelFactory.getModel(ModelFactory.Model.pValue).auc();
+        ModelFactory.getModel(ModelFactory.Model.pValue).confusionMatrix();
+        ModelFactory.getModel(ModelFactory.Model.Centrality).auc();
+        ModelFactory.getModel(ModelFactory.Model.Centrality).confusionMatrix();
     }
 
 }
