@@ -1,9 +1,7 @@
 package it.unipa.bigdata.dmi.lda.config;
 
-import org.apache.log4j.Logger;
-import org.apache.spark.SparkConf;
-
 import org.apache.log4j.Level;
+import org.apache.spark.SparkConf;
 
 public class SparkConfig {
     private String appName = "LDA";

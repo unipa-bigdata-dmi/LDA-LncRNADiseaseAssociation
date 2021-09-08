@@ -1,8 +1,6 @@
 package it.unipa.bigdata.dmi.lda.service;
 
 import it.unipa.bigdata.dmi.lda.config.SparkConfig;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
 
