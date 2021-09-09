@@ -6,12 +6,12 @@ import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.functions.{col, lit, when, count}
 
-class Catania extends ModelInterface{
+class Catania(val version: ModelFactory.Version) extends ModelInterface{
   private val sparkSession: SparkSession = SparkFactory.getSparkSession
   private val rocFunction = ROCFunction()
 
   override def loadPredictions():DataFrame = {
-    val scores = sparkSession.read.parquet("resources/predictions/hmddv2/catania_fdr/")
+    val scores = sparkSession.read.parquet(s"resources/predictions/${version}/catania_fdr/")
     scores
   }
 

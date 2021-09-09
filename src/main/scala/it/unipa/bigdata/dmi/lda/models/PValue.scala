@@ -6,12 +6,12 @@ import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.sql.functions.{col, count, lit, when}
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 
-class PValue extends ModelInterface {
+class PValue(val version: ModelFactory.Version) extends ModelInterface {
   private val sparkSession: SparkSession = SparkFactory.getSparkSession
   private val rocFunction = ROCFunction()
 
   override def loadPredictions(): DataFrame = {
-    val scores = sparkSession.read.parquet("resources/predictions/hmddv2/pvalue_fdr/")
+    val scores = sparkSession.read.parquet(s"resources/predictions/${version}/pvalue_fdr/")
     scores
   }
 

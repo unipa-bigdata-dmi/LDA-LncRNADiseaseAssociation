@@ -6,13 +6,13 @@ import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 
-class Centrality extends ModelInterface{
+class Centrality(val version: ModelFactory.Version) extends ModelInterface{
   private val sparkSession: SparkSession = SparkFactory.getSparkSession
   private val alpha: Double = 0.25
   private val rocFunction = ROCFunction()
 
   override def loadPredictions():DataFrame = {
-    val scores = sparkSession.read.parquet("resources/predictions/hmddv2/centrality_fdr/" + alpha.toString)
+    val scores = sparkSession.read.parquet(s"resources/predictions/${version}/centrality_fdr/" + alpha.toString)
     scores
   }
 
