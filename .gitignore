@@ -5,3 +5,5 @@
 lda.iml
 
 target/
+
+resources/*
