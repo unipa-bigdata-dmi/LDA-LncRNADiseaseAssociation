@@ -1,10 +1,11 @@
-package it.unipa.bigdata.dmi.lda.models
+package it.unipa.bigdata.dmi.lda.impl
 
-import it.unipa.bigdata.dmi.lda.service.SparkFactory
+import it.unipa.bigdata.dmi.lda.factory.{ModelFactory, SparkFactory}
+import it.unipa.bigdata.dmi.lda.interfaces.ModelInterface
 import it.unipa.bigdata.dmi.lda.utility.ROCFunction
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.apache.spark.sql.functions.{col, lit, when, count}
+import org.apache.spark.sql.functions.{col, count, lit, when}
 
 class Catania(val version: ModelFactory.Version) extends ModelInterface{
   private val sparkSession: SparkSession = SparkFactory.getSparkSession

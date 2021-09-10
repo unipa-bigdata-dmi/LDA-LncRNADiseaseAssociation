@@ -1,4 +1,4 @@
-package it.unipa.bigdata.dmi.lda.service;
+package it.unipa.bigdata.dmi.lda.factory;
 
 import it.unipa.bigdata.dmi.lda.config.SparkConfig;
 import org.apache.spark.api.java.JavaSparkContext;

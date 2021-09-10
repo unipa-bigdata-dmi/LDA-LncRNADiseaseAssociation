@@ -1,4 +1,4 @@
-package it.unipa.bigdata.dmi.lda.models;
+package it.unipa.bigdata.dmi.lda.interfaces;
 
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics;
 import org.apache.spark.sql.Dataset;

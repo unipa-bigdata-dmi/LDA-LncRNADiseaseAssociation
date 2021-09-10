@@ -1,6 +1,7 @@
-package it.unipa.bigdata.dmi.lda.models
+package it.unipa.bigdata.dmi.lda.impl
 
-import it.unipa.bigdata.dmi.lda.service.SparkFactory
+import it.unipa.bigdata.dmi.lda.factory.{ModelFactory, SparkFactory}
+import it.unipa.bigdata.dmi.lda.interfaces.ModelInterface
 import it.unipa.bigdata.dmi.lda.utility.ROCFunction
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.sql.functions._
