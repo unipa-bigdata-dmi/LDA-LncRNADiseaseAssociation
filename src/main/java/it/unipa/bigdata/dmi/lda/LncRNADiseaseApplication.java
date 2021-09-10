@@ -1,35 +1,18 @@
 package it.unipa.bigdata.dmi.lda;
 
-import it.unipa.bigdata.dmi.lda.factory.ModelFactory;
 import it.unipa.bigdata.dmi.lda.interfaces.ModelInterface;
-import org.apache.commons.cli.*;
-
-import java.util.Arrays;
+import org.apache.commons.cli.ParseException;
 
 public class LncRNADiseaseApplication {
 
     public static void main(String[] args) throws ParseException {
-        CommandLine cmd = LDACli.getCMD(args);
         // Load user inputs
-        ModelFactory.Version version = null;
-        ModelFactory.Model model_ = null;
-        try {
-            version = ModelFactory.Version.fromString(cmd.getOptionValue("version").toLowerCase());
-        }
-        catch (IllegalArgumentException e){
-            System.err.println(String.format("Version must be one between %s",
-                    Arrays.stream(ModelFactory.Version.values()).map(m -> String.format("'%s'",m.label)).reduce((x,y)->String.format("%s,%s",x,y)).get()));
-        }
-        try {
-            model_ = ModelFactory.Model.fromString(cmd.getOptionValue("model").toLowerCase());
-        }catch (IllegalArgumentException e){
-            System.err.println(String.format("Model must be one between %s",
-                    Arrays.stream(ModelFactory.Model.values()).map(m -> String.format("'%s'",m.label)).reduce((x,y)->String.format("%s,%s",x,y)).get()));
-        }
-        ModelFactory.setVersion(version);
-        ModelInterface model = ModelFactory.getModel(model_);
-        model.auc();
-        model.confusionMatrix();
-    }
+        ModelInterface model = LDACli.getModel(args);
+        if (model != null) {
+            model.auc();
+            model.confusionMatrix();
 
+        }
+    }
 }
+

@@ -12,7 +12,7 @@ public class ModelFactory {
 
         public final String label;
 
-        private Version(String label) {
+        Version(String label) {
             this.label = label;
         }
 
@@ -34,7 +34,7 @@ public class ModelFactory {
         Catania("catania");
         public final String label;
 
-        private Model(String label) {
+        Model(String label) {
             this.label = label;
         }
 

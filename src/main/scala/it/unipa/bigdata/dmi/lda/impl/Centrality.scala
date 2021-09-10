@@ -11,9 +11,21 @@ class Centrality(val version: ModelFactory.Version) extends ModelInterface{
   private val sparkSession: SparkSession = SparkFactory.getSparkSession
   private val alpha: Double = 0.25
   private val rocFunction = ROCFunction()
+  private var scores: Dataset[Row] = null
+
+  /**
+   * Load into a Dataset the parquet stored in the given path.
+   *
+   * @param path Folder in which the parquet file is stored.
+   * @return Loaded parquet as Dataset.
+   */
+  override def loadPredictions(path: String): Dataset[Row] = {
+    scores = sparkSession.read.parquet(path)
+    scores
+  }
 
   override def loadPredictions():DataFrame = {
-    val scores = sparkSession.read.parquet(s"resources/predictions/${version}/centrality_fdr/" + alpha.toString)
+    scores = sparkSession.read.parquet(s"resources/predictions/${version}/centrality_fdr/" + alpha.toString)
     scores
   }
 

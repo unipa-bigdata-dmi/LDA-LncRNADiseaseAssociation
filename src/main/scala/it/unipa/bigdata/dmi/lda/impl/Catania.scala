@@ -4,15 +4,21 @@ import it.unipa.bigdata.dmi.lda.factory.{ModelFactory, SparkFactory}
 import it.unipa.bigdata.dmi.lda.interfaces.ModelInterface
 import it.unipa.bigdata.dmi.lda.utility.ROCFunction
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 import org.apache.spark.sql.functions.{col, count, lit, when}
 
 class Catania(val version: ModelFactory.Version) extends ModelInterface{
   private val sparkSession: SparkSession = SparkFactory.getSparkSession
   private val rocFunction = ROCFunction()
+  private var scores: Dataset[Row] = null
 
   override def loadPredictions():DataFrame = {
-    val scores = sparkSession.read.parquet(s"resources/predictions/${version}/catania_fdr/")
+    scores = sparkSession.read.parquet(s"resources/predictions/${version}/catania_fdr/")
+    scores
+  }
+
+  override def loadPredictions(path: String): Dataset[Row] = {
+    scores = sparkSession.read.parquet(path)
     scores
   }
 

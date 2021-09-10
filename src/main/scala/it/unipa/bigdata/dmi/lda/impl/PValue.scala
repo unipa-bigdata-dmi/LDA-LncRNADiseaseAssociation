@@ -11,9 +11,21 @@ import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 class PValue(val version: Version) extends ModelInterface {
   private val sparkSession: SparkSession = SparkFactory.getSparkSession
   private val rocFunction = ROCFunction()
+  private var scores: Dataset[Row] = null
+
+  /**
+   * Load into a Dataset the parquet stored in the given path.
+   *
+   * @param path Folder in which the parquet file is stored.
+   * @return Loaded parquet as Dataset.
+   */
+  override def loadPredictions(path: String): Dataset[Row] = {
+    scores = sparkSession.read.parquet(path)
+    scores
+  }
 
   override def loadPredictions(): DataFrame = {
-    val scores = sparkSession.read.parquet(s"resources/predictions/${version}/pvalue_fdr/")
+    scores = sparkSession.read.parquet(s"resources/predictions/${version}/pvalue_fdr/")
     scores
   }
 
