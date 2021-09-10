@@ -9,28 +9,7 @@ import java.util.Arrays;
 public class LncRNADiseaseApplication {
 
     public static void main(String[] args) throws ParseException {
-        // Define options
-        Options options = new Options();
-        // version
-        options.addOption(Option.builder("v")
-                .longOpt("version")
-                .hasArg()
-                .desc("select hmdd dataset version (2 or 3)" )
-                .required()
-                .build());
-        // model
-        options.addOption(Option.builder("m")
-                .longOpt("model")
-                .hasArg()
-                .desc("select model (centrality, pvalue, catania)" )
-                .required()
-                .build());
-
-
-        // Create a parser
-        CommandLineParser parser = new DefaultParser();
-        CommandLine cmd = parser.parse( options, args);
-
+        CommandLine cmd = LDACli.getCMD(args);
         // Load user inputs
         ModelFactory.Version version = null;
         ModelFactory.Model model_ = null;
