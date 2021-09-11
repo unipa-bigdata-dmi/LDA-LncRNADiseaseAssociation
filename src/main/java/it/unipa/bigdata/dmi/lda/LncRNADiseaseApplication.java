@@ -1,5 +1,6 @@
 package it.unipa.bigdata.dmi.lda;
 
+import it.unipa.bigdata.dmi.lda.config.LDACli;
 import it.unipa.bigdata.dmi.lda.interfaces.ModelInterface;
 import org.apache.commons.cli.ParseException;
 
@@ -11,7 +12,6 @@ public class LncRNADiseaseApplication {
         if (model != null) {
             model.auc();
             model.confusionMatrix();
-
         }
     }
 }
