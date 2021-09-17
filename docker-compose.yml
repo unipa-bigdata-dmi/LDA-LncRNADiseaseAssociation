@@ -1,20 +1,13 @@
 version: "3"
 
 services:
-  angular:
-    container_name: lda-web
-    build:
-      context: web/
-      dockerfile: ../docker/angular.Dockerfile
-    ports:
-      - "4200:4200"
-    volumes:
-      - /app/node_modules
-      - ./web/:/app
-  lda-be:
+  lda:
     build:
       context: ./
       dockerfile: ./docker/Dockerfile
-    container_name: lda-be
-    ports:
-      - "8080:8080"
+    container_name: lda
+    volumes:
+    - ./src:/usr/src/app/src
+    - ./jars/:/usr/src/app/jars/
+    - ../../../.m2:/root/.m2 # TODO: cambiare in directory locale al progetto
+    command: bash -c "mvn -f /usr/src/app/pom.xml clean install && mv /usr/src/app/target/* /usr/src/app/jars/"
