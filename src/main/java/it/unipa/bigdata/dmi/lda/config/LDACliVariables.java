@@ -8,12 +8,16 @@ import java.util.Objects;
 
 public class LDACliVariables {
     private String predictionPath = null;
+    private String mdPath = null;
+    private String mlPath = null;
+    private String ldPath = null;
     private Double alpha = null;
     private ModelFactory.Model model = null;
     private ModelFactory.Version version = null;
 
     /**
      * Construct an object using the options of the user input.
+     *
      * @param options User inputs
      */
     public LDACliVariables(Option[] options) {
@@ -45,6 +49,15 @@ public class LDACliVariables {
                         System.err.println(String.format("Model must be one between %s",
                                 Arrays.stream(ModelFactory.Model.values()).map(m -> String.format("'%s'", m.label)).reduce((x, y) -> String.format("%s,%s", x, y)).get()));
                     }
+                case LD_OPT:
+                    ldPath = option.getValue();
+                    break;
+                case MD_OPT:
+                    mdPath = option.getValue();
+                    break;
+                case ML_OPT:
+                    mlPath = option.getValue();
+                    break;
                 default:
                     break;
             }
@@ -55,45 +68,60 @@ public class LDACliVariables {
         return predictionPath;
     }
 
-    public void setPredictionPath(String predictionPath) {
-        this.predictionPath = predictionPath;
-    }
-
     /**
      * Return the alpha parameter used for the Centrality model.
+     *
      * @return Alpha parameter (0.25 default).
      */
     public Double getAlpha() {
-        return alpha != null ? alpha : 0.25;
-    }
-
-    public void setAlpha(Double alpha) {
-        this.alpha = alpha;
+        return alpha;
     }
 
     public ModelFactory.Model getModel() {
         return model;
     }
 
-    public void setModel(ModelFactory.Model model) {
-        this.model = model;
-    }
-
     public ModelFactory.Version getVersion() {
         return version;
     }
 
-    public void setVersion(ModelFactory.Version version) {
-        this.version = version;
+    public String getMdPath() {
+        return mdPath;
+    }
+
+    public String getMlPath() {
+        return mlPath;
+    }
+
+    public String getLdPath() {
+        return ldPath;
     }
 
     @Override
     public String toString() {
-        return "CliVariables{" +
-                "predictionPath='" + predictionPath + '\'' +
-                ", alpha=" + alpha +
-                ", model=" + model.label +
-                ", version=" + version.label +
-                '}';
+        return Arrays.stream(this.getClass().getDeclaredFields()).filter(field -> {
+            try {
+                return field.get(this) != null;
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }).map(field -> {
+            try {
+                return String.format("%s: '%s'",field.getName(),field.get(this));
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+                return "";
+            }
+        }).reduce((x,y)->x+"\n"+y).get();
+//        return "LDACliVariables{" +
+//                "predictionPath='" + predictionPath + '\'' +
+//                ", mdPath='" + mdPath + '\'' +
+//                ", mlPath='" + mlPath + '\'' +
+//                ", ldPath='" + ldPath + '\'' +
+//                ", alpha=" + alpha +
+//                ", model=" + model +
+//                ", version=" + version +
+//                '}';
     }
 }

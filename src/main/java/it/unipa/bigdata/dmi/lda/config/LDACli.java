@@ -40,6 +40,24 @@ public class LDACli {
                 .desc("parquet path for the prediction to load. If set, it will return a generic predictor model")
                 .required(false)
                 .build()),
+        ML_OPT("ml", Option.builder("ml")
+                .longOpt("mirnaLncrnaPath")
+                .hasArg()
+                .desc("csv path for the dataset of miRNA-lncRNA associations. See README for file format.")
+                .required(false)
+                .build()),
+        MD_OPT("md", Option.builder("md")
+                .longOpt("mirnaDiseasePath")
+                .hasArg()
+                .desc("csv path for the dataset of miRNA-disease associations. See README for file format.")
+                .required(false)
+                .build()),
+        LD_OPT("ld", Option.builder("ld")
+                .longOpt("lncrnaDiseasePath")
+                .hasArg()
+                .desc("csv path for the dataset of lncRNA-disease associations. See README for file format.")
+                .required(false)
+                .build()),
         ALPHA_OPT("a", Option.builder("a")
                 .longOpt("alpha")
                 .hasArg()
@@ -75,6 +93,10 @@ public class LDACli {
     }
 
     private static CommandLine cmd = null;
+    private static LDACliVariables variables = null;
+
+    private LDACli() {
+    }
 
     /**
      * Create the CommandLine interface from the arguments given by the main application.
@@ -90,6 +112,7 @@ public class LDACli {
         // Create a parser
         CommandLineParser parser = new DefaultParser();
         cmd = parser.parse(options, args);
+        variables = new LDACliVariables(cmd.getOptions());
     }
 
     /**
@@ -110,16 +133,44 @@ public class LDACli {
      * @return ModelInterface to be used in the main application.
      * @throws ParseException
      */
-    public static ModelInterface getModel(String[] args) throws ParseException {
+    public static ModelInterface getParsedModel(String[] args) throws ParseException {
         setupCLI(args);
         if (cmd.getOptions().length == 0 || cmd.hasOption(CliOption.HELP_OPT.label))
             printHelp();
         else {
-            LDACliVariables variables = new LDACliVariables(cmd.getOptions());
+            assert variables != null;
             System.out.println(variables);
-            return ModelFactory.getModel(variables);
+            return ModelFactory.getModel();
         }
         return null;
     }
 
+    public static ModelFactory.Version getVersion() {
+        return variables.getVersion() == null ? ModelFactory.Version.HMDDv2 : variables.getVersion();
+    }
+
+    public static String getMdPath() {
+        return variables.getMdPath();
+    }
+
+    public static String getMlPath() {
+        return variables.getMlPath();
+    }
+
+    public static String getLdPath() {
+        return variables.getLdPath();
+    }
+
+    public static String getPredictionPath() {
+        return variables.getPredictionPath();
+    }
+
+    public static Double getAlpha() {
+        return variables.getAlpha() == null ? 0.25 : variables.getAlpha();
+    }
+
+    public static ModelFactory.Model getModel() {
+        assert variables.getModel() != null;
+        return variables.getModel();
+    }
 }
