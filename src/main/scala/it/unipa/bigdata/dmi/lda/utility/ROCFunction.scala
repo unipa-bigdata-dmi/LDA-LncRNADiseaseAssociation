@@ -19,7 +19,7 @@ case class ROCFunction() {
    */
   def roc(predictionAndLabels: DataFrame): BinaryClassificationMetrics = {
     // Instantiate metrics object
-    val metrics = new BinaryClassificationMetrics(predictionAndLabels.as[PredictionFDR](Encoders.bean(classOf[PredictionFDR])).rdd.map(r => (r.getFdr(), if (r.getGoldStandard()) 1.0 else 0.0)))
+    val metrics = new BinaryClassificationMetrics(predictionAndLabels.rdd.map(r => (r.getDouble(0), r.getDouble(1))))
 
     // AUPRC
     val auPRC = metrics.areaUnderPR

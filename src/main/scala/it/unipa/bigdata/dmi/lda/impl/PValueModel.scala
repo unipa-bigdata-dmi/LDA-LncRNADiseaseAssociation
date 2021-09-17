@@ -70,11 +70,6 @@ class PValueModel() extends GraphframeAbstractModel() {
       for (i <- 0 until x) {
         sum = sum + (binom(L, i) * binom(N - L, M - i)) / binom(N, M)
       }
-      new Prediction()
-        .setDisease(dis)
-        .setLncRNA(lnc)
-        .setScore((1 - sum).abs)
-        .setGoldStandard(GS_broadcast.value.contains(lnc + ";" + dis))
       (lnc,
         dis,
         x,
