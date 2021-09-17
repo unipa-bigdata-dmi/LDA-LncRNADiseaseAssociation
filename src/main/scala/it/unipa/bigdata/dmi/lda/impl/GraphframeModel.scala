@@ -1,7 +1,10 @@
 package it.unipa.bigdata.dmi.lda.impl
 
-import org.apache.spark.sql.{Dataset, Row}
+import it.unipa.bigdata.dmi.lda.model.{Prediction, PredictionFDR}
+import org.apache.spark.sql.{DataFrame, Dataset}
 
-class PredictionModel() extends PredictionAbstractModel {
-  override def compute(): Dataset[Row] = return null
+class GraphframeModel() extends GraphframeAbstractModel {
+  override def compute(): DataFrame = return null
+
+  override def predict(): DataFrame = return null
 }

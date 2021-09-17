@@ -1,11 +1,12 @@
 package it.unipa.bigdata.dmi.lda.impl
 
 import it.unipa.bigdata.dmi.lda.config.LDACli
+import it.unipa.bigdata.dmi.lda.model.{Prediction, PredictionFDR}
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.sql.functions.{col, count, lit, when}
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
 
-class CataniaModel() extends PredictionModel() {
+class CataniaModel() extends GraphframeAbstractModel() {
 
   override def loadPredictions(): DataFrame = {
     super.loadPredictions(s"resources/predictions/${LDACli.getVersion}/catania_fdr/")
@@ -30,7 +31,9 @@ class CataniaModel() extends PredictionModel() {
     scores
   }
 
-  override def compute(): Dataset[Row] = {
+  override def compute(): DataFrame = {
     return null
   }
+
+  override def predict(): DataFrame = return null
 }

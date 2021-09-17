@@ -1,44 +1,36 @@
 package it.unipa.bigdata.dmi.lda.impl
 
 import it.unipa.bigdata.dmi.lda.config.LDACli
+import it.unipa.bigdata.dmi.lda.model.{Prediction, PredictionFDR}
+import it.unipa.bigdata.dmi.lda.utility.FDRFunction
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.{DataFrame, Dataset, Row}
+import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row}
 
-class PValueModel() extends PredictionModel() {
+class PValueModel() extends GraphframeAbstractModel() {
 
-  import sqlContext.implicits._
 
-  private def binom(n: Int, k: Int): Double = {
-    //   require(0 <= k && k <= n)
-    @annotation.tailrec
-    def binomtail(nIter: Int, kIter: Int, ac: BigDecimal): BigDecimal = {
-      if (kIter > k) ac
-      else binomtail(nIter + 1, kIter + 1, (nIter * ac) / kIter)
-    }
-
-    if (k == 0 || k == n) 1
-    else binomtail(n - k + 1, 1, BigDecimal(1.0)).toDouble
-  }
 
   override def compute(): DataFrame = {
-    val startingEdges = super.graphFrame.find("(lncrna)-[lda]->(disease)")
+    import sqlContext.implicits._
+    println("- pValue compute - getting variables")
+    val startingEdges = graphFrame.find("(lncrna)-[lda]->(disease)")
       .filter("lda.relationship == 'lda' and lncrna.type='LncRNA' and disease.type='Disease'")
       .cache()
     println(s"Cached startingEdges ${startingEdges.count} rows")
-    val x = super.graphFrame.find("(mirna)-[mla]->(x_lncrna); (mirna)-[mda]->(x_disease)")
+    val x = graphFrame.find("(mirna)-[mla]->(x_lncrna); (mirna)-[mda]->(x_disease)")
       .filter("mla.relationship == 'mla' and mda.relationship == 'mda' and mirna.type='miRNA' and x_lncrna.type='LncRNA' and x_disease.type='Disease'")
       .groupBy("x_lncrna", "x_disease")
       .agg(collect_set(col("mirna")).as("mirnas"), countDistinct("mirna").as("x"))
       .cache()
     println(s"Cached x ${x.count} rows")
-    val M = super.graphFrame.find("(mirna)-[mla]->(M_lncrna)")
+    val M = graphFrame.find("(mirna)-[mla]->(M_lncrna)")
       .filter("mla.relationship == 'mla' and mirna.type='miRNA' and M_lncrna.type='LncRNA'")
       .groupBy("M_lncrna")
       .agg(collect_set(col("mirna")).as("mirnas"), countDistinct("mirna").as("M"))
       .cache()
     println(s"Cached M ${M.count} rows")
-    val L = super.graphFrame.find("(mirna)-[mda]->(L_disease)")
+    val L = graphFrame.find("(mirna)-[mda]->(L_disease)")
       .filter("mda.relationship == 'mda' and mirna.type='miRNA' and L_disease.type='Disease'")
       .groupBy("L_disease")
       .agg(collect_set(col("mirna")).as("mirnas"), countDistinct("mirna").as("L"))
@@ -52,18 +44,37 @@ class PValueModel() extends PredictionModel() {
       .na.fill(0)
       .cache()
     println(s"Cached associations ${associations.count} rows")
-    val N_broadcast = super.sparkSession.sparkContext.broadcast(super.datasetReader.getMiRNA.count())
-    super.scores = associations.rdd.map(row => {
+    val N_ = datasetReader.getMiRNA.count()
+    val GS_broadcast = sparkSession.sparkContext.broadcast(datasetReader.getLncrnaDisease().rdd.map(r => s"${r.getString(0)};${r.getString(1)}").map(pair => pair.toUpperCase().trim()).collect())
+    println("- pValue compute - Computing scores")
+    scores = sparkSession.createDataFrame(associations.withColumn("N",lit(N_)).rdd.map(row => {
+      def binom(n: Int, k: Int): Double = {
+        //   require(0 <= k && k <= n)
+        @annotation.tailrec
+        def binomtail(nIter: Int, kIter: Int, ac: BigDecimal): BigDecimal = {
+          if (kIter > k) ac
+          else binomtail(nIter + 1, kIter + 1, (nIter * ac) / kIter)
+        }
+
+        if (k == 0 || k == n) 1
+        else binomtail(n - k + 1, 1, BigDecimal(1.0)).toDouble
+      }
+
       val lnc = row.getStruct(0).getString(0)
       val dis = row.getStruct(1).getString(0)
       val x = row.getLong(2).toInt
       val M = row.getLong(3).toInt
       val L = row.getLong(4).toInt
-      val N = N_broadcast.value.toInt
+      val N = row.getLong(5).toInt
       var sum = 0.0
       for (i <- 0 until x) {
         sum = sum + (binom(L, i) * binom(N - L, M - i)) / binom(N, M)
       }
+      new Prediction()
+        .setDisease(dis)
+        .setLncRNA(lnc)
+        .setScore((1 - sum).abs)
+        .setGoldStandard(GS_broadcast.value.contains(lnc + ";" + dis))
       (lnc,
         dis,
         x,
@@ -71,10 +82,22 @@ class PValueModel() extends PredictionModel() {
         L,
         N,
         (1 - sum).abs,
-        super.datasetReader.getLncrnaDisease().rdd.map(r => s"${r.getString(0)};${r.getString(1)}").map(pair => pair.toUpperCase().trim()).collect().contains(lnc + ";" + dis)
+        GS_broadcast.value.contains(lnc + ";" + dis)
       )
-    }).toDF("lncrna", "disease", "x", "M", "L", "N", "PValue", "gs")
-    super.scores
+    }))
+    startingEdges.unpersist()
+    x.unpersist()
+    M.unpersist()
+    L.unpersist()
+    associations.unpersist()
+    println(s"Caching scores: ${scores.count()}")
+    scores
+  }
+
+  override def predict(): DataFrame = {
+    val scores = compute()
+    val predictions = FDRFunction().computeFDR(scores)
+    predictions
   }
 
   override def loadPredictions(): DataFrame = {
@@ -89,7 +112,7 @@ class PValueModel() extends PredictionModel() {
     metrics
   }
 
-  override def confusionMatrix(): Dataset[Row] = {
+  override def confusionMatrix(): DataFrame = {
     val scores = loadPredictions().select(col("prediction"), col("gs"))
       .groupBy("gs", "prediction").agg(count("gs").as("count"))
       .sort(col("gs").desc, col("prediction").desc)
@@ -98,4 +121,5 @@ class PValueModel() extends PredictionModel() {
     println("------------")
     scores
   }
+
 }

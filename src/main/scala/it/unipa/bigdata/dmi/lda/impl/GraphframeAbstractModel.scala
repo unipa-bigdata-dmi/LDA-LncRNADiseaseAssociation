@@ -3,23 +3,25 @@ package it.unipa.bigdata.dmi.lda.impl
 import it.unipa.bigdata.dmi.lda.config.LDACli
 import it.unipa.bigdata.dmi.lda.factory.SparkFactory
 import it.unipa.bigdata.dmi.lda.interfaces.ModelInterface
+import it.unipa.bigdata.dmi.lda.model.{Prediction, PredictionFDR}
 import it.unipa.bigdata.dmi.lda.utility.ROCFunction
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.sql.functions.{col, count, lit}
-import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row, SparkSession}
 import org.graphframes.GraphFrame
 
-abstract class PredictionAbstractModel() extends ModelInterface {
+abstract class GraphframeAbstractModel() extends ModelInterface {
   protected val sparkSession: SparkSession = SparkFactory.getSparkSession
   protected val sqlContext = new org.apache.spark.sql.SQLContext(sparkSession.sparkContext)
   protected val rocFunction: ROCFunction = ROCFunction()
-  protected var scores: Dataset[Row] = _
+  protected var scores: DataFrame= _
+  protected var predictions: DataFrame = _
   protected val datasetReader: DatasetReader = new DatasetReader()
   protected var graphFrame: GraphFrame = getGraphFrame()
 
   def getGraphFrame(): GraphFrame = {
     if (graphFrame == null) {
-      println("Loading GraphFrame - Creating edges")
+      println("- Loading GraphFrame - Creating edges")
       val edges = datasetReader.getMirnaDisease().select(col("mirna").as("src"), col("disease").as("dst"), lit("mda").as("relationship"))
         .union(datasetReader.getMirnaLncrna().select(col("mirna").as("src"), col("lncrna").as("dst"), lit("mla").as("relationship")))
         .union(datasetReader.getAllCombination.select(col("lncrna").as("src"), col("disease").as("dst"), lit("lda").as("relationship")))
@@ -27,7 +29,7 @@ abstract class PredictionAbstractModel() extends ModelInterface {
         .repartition(360)
         .cache()
       println(s"Cached edges ${edges.count} rows")
-      println("Loading GraphFrame - Creating vertices")
+      println("- Loading GraphFrame - Creating vertices")
       val lncrna = datasetReader.getLncRNA.select(col("lncrna").as("id"))
         .distinct.withColumn("type", lit("LncRNA"))
       val diseases = datasetReader.getDisease.select(col("disease").as("id"))
@@ -52,8 +54,8 @@ abstract class PredictionAbstractModel() extends ModelInterface {
   }
 
   protected def loadPredictions(path: String): DataFrame = {
-    scores = sparkSession.read.parquet(path)
-    scores
+    predictions = sparkSession.read.parquet(path)
+    predictions
   }
 
   override def auc(): BinaryClassificationMetrics = {

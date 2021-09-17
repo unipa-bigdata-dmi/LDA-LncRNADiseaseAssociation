@@ -1,12 +1,12 @@
 package it.unipa.bigdata.dmi.lda.impl
 
 import it.unipa.bigdata.dmi.lda.config.LDACli
-import it.unipa.bigdata.dmi.lda.factory.ModelFactory.Version
+import it.unipa.bigdata.dmi.lda.model.{Prediction, PredictionFDR}
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
 
-class CentralityModel() extends PredictionModel() {
+class CentralityModel() extends GraphframeAbstractModel() {
 
   override def loadPredictions(): DataFrame = {
     super.loadPredictions(s"resources/predictions/${LDACli.getVersion}/centrality_fdr/${LDACli.getAlpha}")
@@ -30,5 +30,7 @@ class CentralityModel() extends PredictionModel() {
     scores
   }
 
-  override def compute(): Dataset[Row] = return null
+  override def compute(): DataFrame = return null
+
+  override def predict(): DataFrame = return null
 }
