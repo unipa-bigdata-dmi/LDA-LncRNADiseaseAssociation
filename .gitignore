@@ -9,3 +9,5 @@ target/
 resources/*
 
 resources.zip
+
+jars/*
