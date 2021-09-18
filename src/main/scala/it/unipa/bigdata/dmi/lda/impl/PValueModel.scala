@@ -9,10 +9,9 @@ import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row}
 
 class PValueModel() extends GraphframeAbstractModel() {
 
-
-
   override def compute(): DataFrame = {
     import sqlContext.implicits._
+    getGraphFrame()
     println("- pValue compute - getting variables")
     val startingEdges = graphFrame.find("(lncrna)-[lda]->(disease)")
       .filter("lda.relationship == 'lda' and lncrna.type='LncRNA' and disease.type='Disease'")

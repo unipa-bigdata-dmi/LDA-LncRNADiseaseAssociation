@@ -17,7 +17,7 @@ abstract class GraphframeAbstractModel() extends ModelInterface {
   protected var scores: DataFrame= _
   protected var predictions: DataFrame = _
   protected val datasetReader: DatasetReader = new DatasetReader()
-  protected var graphFrame: GraphFrame = getGraphFrame()
+  protected var graphFrame: GraphFrame = _
 
   def getGraphFrame(): GraphFrame = {
     if (graphFrame == null) {

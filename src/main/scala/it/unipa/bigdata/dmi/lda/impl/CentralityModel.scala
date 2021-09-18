@@ -2,6 +2,7 @@ package it.unipa.bigdata.dmi.lda.impl
 
 import it.unipa.bigdata.dmi.lda.config.LDACli
 import it.unipa.bigdata.dmi.lda.model.{Prediction, PredictionFDR}
+import org.apache.commons.lang.NotImplementedException
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
@@ -30,7 +31,7 @@ class CentralityModel() extends GraphframeAbstractModel() {
     scores
   }
 
-  override def compute(): DataFrame = return null
+  override def compute(): DataFrame = throw new NotImplementedException()
 
-  override def predict(): DataFrame = return null
+  override def predict(): DataFrame = throw new NotImplementedException()
 }

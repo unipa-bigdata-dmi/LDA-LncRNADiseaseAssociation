@@ -4,6 +4,7 @@ import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 
+
 public interface ROCInterface {
 
     /**
@@ -11,11 +12,11 @@ public interface ROCInterface {
      * "prediction" and "gs" in the boolean format.
      * @return The dataset representing the confusion matrix in the format ["gs", "prediction", "count"]
      */
-    public Dataset<Row> confusionMatrix();
+    Dataset<Row> confusionMatrix();
 
     /**
      * Print the values of AUC and precision-recall curve. The dataset
      * @return The metrics obtained.
      */
-    public BinaryClassificationMetrics auc();
+    BinaryClassificationMetrics auc();
 }
