@@ -3,21 +3,35 @@ package it.unipa.bigdata.dmi.lda.impl
 import it.unipa.bigdata.dmi.lda.config.LDACli
 import it.unipa.bigdata.dmi.lda.model.{Prediction, PredictionFDR}
 import org.apache.commons.lang.NotImplementedException
+import org.apache.log4j.Logger
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.{Dataset, Encoders, Row}
+import org.apache.spark.sql.{Column, Dataset, Encoders, Row}
 
 class CentralityModel() extends GraphframeAbstractModel() {
+  private val logger: Logger = Logger.getLogger(classOf[CentralityModel])
 
   override def loadPredictions(): Dataset[PredictionFDR] = {
-    super.loadPredictions(s"resources/predictions/${LDACli.getVersion}/centrality_fdr/${LDACli.getAlpha}")
+    if (predictions == null) {
+      val tmp = sparkSession.read.parquet(s"resources/predictions/${LDACli.getVersion}/centrality_fdr/${LDACli.getAlpha}").withColumnRenamed("PValue", "score")
+      val names = classOf[PredictionFDR].getDeclaredFields.union(classOf[PredictionFDR].getSuperclass.getDeclaredFields).map(f => f.getName)
+      val mapColumn: Column = map(tmp.drop(names: _*).columns.tail.flatMap(name => Seq(lit(name), col(s"$name"))): _*)
+      predictions = tmp.withColumn("parameters", mapColumn).select("parameters", names: _*)
+        .as[PredictionFDR](Encoders.bean(classOf[PredictionFDR])).cache()
+    }
+    logger.info(s"Caching Centrality predictions: ${predictions.count()}")
+
+    predictions
   }
 
   override def auc(): BinaryClassificationMetrics = {
-    if (predictions == null)
-      predictions = loadPredictions().select(lit(1) - col("fdr"), when(col("gs").equalTo(true), 1.0).otherwise(0.0))
-        .as[PredictionFDR](Encoders.bean(classOf[PredictionFDR]))
-    auc(predictions)
+    if (predictions == null) {
+      logger.info("AUC: loading predictions")
+      predictions = loadPredictions()
+    }
+    logger.info("AUC: computing")
+    auc(predictions.withColumn("fdr", lit(1) - col("fdr") as "fdr")
+      .as[PredictionFDR](Encoders.bean(classOf[PredictionFDR])))
   }
 
   override def confusionMatrix(): Dataset[Row] = {
@@ -36,7 +50,10 @@ class CentralityModel() extends GraphframeAbstractModel() {
 
   override def loadScores(): Dataset[Prediction] = {
     if (scores == null)
-      super.loadScores(s"resources/predictions/${LDACli.getVersion}/centrality/")
+      scores = sparkSession.read.parquet(s"resources/predictions/${LDACli.getVersion}/centrality/")
+        .withColumnRenamed("PValue", "score").as[Prediction](Encoders.bean(classOf[Prediction]))
+        .cache()
+    logger.info(s"Caching Centrality scores: ${scores.count()}")
     scores
   }
 }

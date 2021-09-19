@@ -7,7 +7,7 @@ import it.unipa.bigdata.dmi.lda.utility.FDRFunction
 import org.apache.log4j.Logger
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.{DataFrame, Dataset, Encoders}
+import org.apache.spark.sql.{Column, DataFrame, Dataset, Encoders}
 
 class PValueModel() extends GraphframeAbstractModel() {
   private val logger: Logger = Logger.getLogger(classOf[PValueModel])
@@ -103,16 +103,25 @@ class PValueModel() extends GraphframeAbstractModel() {
   }
 
   override def loadPredictions(): Dataset[PredictionFDR] = {
-    if (predictions == null)
-      super.loadPredictions(s"resources/predictions/${LDACli.getVersion}/pvalue_fdr/")
+    if (predictions == null) {
+      val tmp = sparkSession.read.parquet(s"resources/predictions/${LDACli.getVersion}/pvalue_fdr/").withColumnRenamed("PValue","score")
+      val names = classOf[PredictionFDR].getDeclaredFields.union(classOf[PredictionFDR].getSuperclass.getDeclaredFields).map(f=>f.getName)
+      val mapColumn: Column = map(tmp.drop(names:_*).columns.tail.flatMap(name => Seq(lit(name), col(s"$name"))): _*)
+      predictions= tmp.withColumn("parameters",mapColumn).select("parameters",names:_*)
+        .as[PredictionFDR](Encoders.bean(classOf[PredictionFDR])).cache()
+    }
+    logger.info(s"Caching pValue predictions: ${predictions.count()}")
     predictions
   }
 
   override def auc(): BinaryClassificationMetrics = {
-    if (predictions == null)
-      predictions = loadPredictions().select(lit(1) - col("fdr"), when(col("gs").equalTo(true), 1.0).otherwise(0.0))
-        .as[PredictionFDR](Encoders.bean(classOf[PredictionFDR]))
-    auc(predictions)
+    if (predictions == null) {
+      logger.info("AUC: loading predictions")
+      predictions = loadPredictions()
+    }
+    logger.info("AUC: computing")
+    auc(predictions.withColumn("fdr",lit(1) - col("fdr") as "fdr")
+      .as[PredictionFDR](Encoders.bean(classOf[PredictionFDR])))
   }
 
   override def confusionMatrix(): DataFrame = {
@@ -126,7 +135,10 @@ class PValueModel() extends GraphframeAbstractModel() {
 
   override def loadScores(): Dataset[Prediction] = {
     if (scores == null)
-      super.loadScores(s"resources/predictions/${LDACli.getVersion}/pvalue/")
+      scores=sparkSession.read.parquet(s"resources/predictions/${LDACli.getVersion}/pvalue/")
+        .withColumnRenamed("PValue","score").as[Prediction](Encoders.bean(classOf[Prediction]))
+          .cache()
+    logger.info(s"Caching pValue scores: ${scores.count()}")
     scores
   }
 }

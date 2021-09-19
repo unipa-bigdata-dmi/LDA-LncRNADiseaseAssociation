@@ -4,6 +4,7 @@ import it.unipa.bigdata.dmi.lda.enums.CliOption;
 import it.unipa.bigdata.dmi.lda.enums.Functions;
 import it.unipa.bigdata.dmi.lda.enums.Model;
 import it.unipa.bigdata.dmi.lda.enums.Version;
+import it.unipa.bigdata.dmi.lda.factory.SparkFactory;
 import org.apache.commons.cli.Option;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
@@ -45,6 +46,7 @@ public class LDACliVariables {
                     }
                 case LOG_OPT:
                     logLevel = Level.toLevel(option.getValue().toUpperCase());
+                    SparkFactory.getJavaSparkContext().setLogLevel(logLevel.toString());
                     Logger.getRootLogger().setLevel(logLevel);
                     break;
                 case LOG_FILE_OPT:

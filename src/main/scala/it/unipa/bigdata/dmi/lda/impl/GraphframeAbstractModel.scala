@@ -56,7 +56,7 @@ abstract class GraphframeAbstractModel() extends ModelInterface {
   }
 
   override def loadScores(): Dataset[Prediction] = {
-    assert(LDACli.getPredictionPath != null)
+    assert(LDACli.getScoresPath != null)
     loadScores(LDACli.getScoresPath)
   }
 
@@ -64,7 +64,6 @@ abstract class GraphframeAbstractModel() extends ModelInterface {
   override def auc(): BinaryClassificationMetrics = {
     if (predictions == null)
       predictions = loadPredictions()
-        .as[PredictionFDR](Encoders.bean(classOf[PredictionFDR]))
     auc(predictions)
   }
 
@@ -78,12 +77,14 @@ abstract class GraphframeAbstractModel() extends ModelInterface {
   }
 
   protected def loadScores(path: String): Dataset[Prediction] = {
-    scores = sparkSession.read.parquet(path).as[Prediction](Encoders.bean(classOf[Prediction]))
+    scores = sparkSession.read.parquet(path).as[Prediction](Encoders.bean(classOf[Prediction])).cache()
+    logger.info(s"Loaded pValue scores: ${scores.count}")
     scores
   }
 
   protected def loadPredictions(path: String): Dataset[PredictionFDR] = {
-    predictions = sparkSession.read.parquet(path).as[PredictionFDR](Encoders.bean(classOf[PredictionFDR]))
+    predictions = sparkSession.read.parquet(path).as[PredictionFDR](Encoders.bean(classOf[PredictionFDR])).cache()
+    logger.info(s"Loaded pValue predictions: ${predictions.count}")
     predictions
   }
 
