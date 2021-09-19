@@ -89,6 +89,7 @@ class PValueModel() extends GraphframeAbstractModel() {
     L.unpersist()
     associations.unpersist()
     logger.info(s"Caching scores: ${scores.count()}")
+    logger.info("pValue scores")
     scores.show(false)
     scores
   }
@@ -96,6 +97,7 @@ class PValueModel() extends GraphframeAbstractModel() {
   override def predict(): Dataset[PredictionFDR] = {
     val scores = compute()
     predictions = FDRFunction().computeFDR(scores)
+    logger.info("pValue predictions")
     predictions.show(false)
     predictions
   }

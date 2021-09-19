@@ -12,14 +12,10 @@ import java.util.Set;
 
 
 public class LncRNADiseaseApplication {
-    final static Logger logger = Logger.getLogger(LncRNADiseaseApplication.class);
 
     public static void main(String[] args) throws ParseException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        logger.info("test");
-
         // Load user inputs
         ModelInterface model = LDACli.getParsedModel(args);
-
         if (model != null) {
             Set<Functions> functions = LDACli.getFunction();
             for (Functions f : Functions.order) {
