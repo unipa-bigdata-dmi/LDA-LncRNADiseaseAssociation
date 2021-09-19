@@ -1,5 +1,6 @@
 package it.unipa.bigdata.dmi.lda.config;
 
+import it.unipa.bigdata.dmi.lda.LncRNADiseaseApplication;
 import it.unipa.bigdata.dmi.lda.enums.CliOption;
 import it.unipa.bigdata.dmi.lda.enums.Functions;
 import it.unipa.bigdata.dmi.lda.enums.Model;
@@ -7,9 +8,9 @@ import it.unipa.bigdata.dmi.lda.enums.Version;
 import it.unipa.bigdata.dmi.lda.factory.ModelFactory;
 import it.unipa.bigdata.dmi.lda.interfaces.ModelInterface;
 import org.apache.commons.cli.*;
+import org.apache.log4j.Logger;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -18,7 +19,7 @@ import java.util.Set;
 public class LDACli {
     private static CommandLine cmd = null;
     private static LDACliVariables variables = null;
-
+    final static Logger logger = Logger.getLogger(LDACli.class);
     private LDACli() {
     }
 
@@ -39,7 +40,7 @@ public class LDACli {
             cmd = parser.parse(options, args);
             variables = new LDACliVariables(cmd.getOptions());
         } catch (MissingOptionException e) {
-            System.err.println(e);
+            logger.error(e);
             printHelp();
         }
     }
@@ -68,7 +69,7 @@ public class LDACli {
             printHelp();
         else {
             assert variables != null;
-            System.out.println(variables);
+            logger.info(variables);
             return ModelFactory.getModel();
         }
         return null;
@@ -79,7 +80,7 @@ public class LDACli {
     }
 
     public static String getMdPath() {
-        return variables.getMdPath() == null ? String.format("resources/datasets/%s/lncrna-disease.csv", getVersion()) : variables.getMdPath();
+        return variables.getMdPath() == null ? String.format("resources/datasets/%s/mirna-disease.csv", getVersion()) : variables.getMdPath();
     }
 
     public static String getMlPath() {
@@ -92,6 +93,10 @@ public class LDACli {
 
     public static String getPredictionPath() {
         return variables.getPredictionPath();
+    }
+
+    public static String getScoresPath() {
+        return variables.getScoresPath();
     }
 
     public static Double getAlpha() {

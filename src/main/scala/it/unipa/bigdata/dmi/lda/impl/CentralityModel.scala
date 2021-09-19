@@ -5,20 +5,19 @@ import it.unipa.bigdata.dmi.lda.model.{Prediction, PredictionFDR}
 import org.apache.commons.lang.NotImplementedException
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.{DataFrame, Dataset, Row}
+import org.apache.spark.sql.{Dataset, Encoders, Row}
 
 class CentralityModel() extends GraphframeAbstractModel() {
 
-  override def loadPredictions(): DataFrame = {
+  override def loadPredictions(): Dataset[PredictionFDR] = {
     super.loadPredictions(s"resources/predictions/${LDACli.getVersion}/centrality_fdr/${LDACli.getAlpha}")
   }
 
   override def auc(): BinaryClassificationMetrics = {
-    val scores = loadPredictions().select(lit(1) - col("fdr"), when(col("gs").equalTo(true), 1.0).otherwise(0.0))
-    println("------------\nCentrality AUC/PR curve")
-    val metrics = rocFunction.roc(scores)
-    println("------------")
-    metrics
+    if (predictions == null)
+      predictions = loadPredictions().select(lit(1) - col("fdr"), when(col("gs").equalTo(true), 1.0).otherwise(0.0))
+        .as[PredictionFDR](Encoders.bean(classOf[PredictionFDR]))
+    auc(predictions)
   }
 
   override def confusionMatrix(): Dataset[Row] = {
@@ -31,7 +30,13 @@ class CentralityModel() extends GraphframeAbstractModel() {
     scores
   }
 
-  override def compute(): DataFrame = throw new NotImplementedException()
+  override def compute(): Dataset[Prediction] = throw new NotImplementedException()
 
-  override def predict(): DataFrame = throw new NotImplementedException()
+  override def predict(): Dataset[PredictionFDR] = throw new NotImplementedException()
+
+  override def loadScores(): Dataset[Prediction] = {
+    if (scores == null)
+      super.loadScores(s"resources/predictions/${LDACli.getVersion}/centrality/")
+    scores
+  }
 }

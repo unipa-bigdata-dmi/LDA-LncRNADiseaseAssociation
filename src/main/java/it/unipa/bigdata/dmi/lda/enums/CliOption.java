@@ -14,6 +14,16 @@ public enum CliOption {
             .desc("select a functionality to run")
             .required(true)
             .build()),
+    LOG_OPT("l",Option.builder("l").longOpt("logLevel")
+            .hasArgs()
+            .argName("INFO, DEBUG, ERROR")
+            .desc("select the log level")
+            .build()),
+    LOG_FILE_OPT("lf",Option.builder("lf").longOpt("logFile")
+            .hasArgs()
+            .argName("file path")
+            .desc("select where to store the log file")
+            .build()),
     VERSION_OPT("v", Option.builder("v")
             .longOpt("version")
             .hasArg()
@@ -34,11 +44,18 @@ public enum CliOption {
             .desc("Print all the commands")
             .required(false)
             .build()),
-    PATH_OPT("pp", Option.builder("pp")
+    PREDICTION_PATH_OPT("pp", Option.builder("pp")
             .longOpt("predictionPath")
             .argName("parquet path")
             .hasArg()
             .desc("parquet path for the prediction to load. If set, it will return a generic predictor model")
+            .required(false)
+            .build()),
+    SCORES_PATH_OPT("sp", Option.builder("sp")
+            .longOpt("scoresPath")
+            .argName("parquet path")
+            .hasArg()
+            .desc("parquet path for the scores to load.")
             .required(false)
             .build()),
     ML_OPT("ml", Option.builder("ml")

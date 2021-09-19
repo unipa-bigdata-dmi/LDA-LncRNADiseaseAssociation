@@ -4,10 +4,11 @@ public enum Functions {
     COMPUTE("compute"),
     PREDICT("predict"),
     LOAD_PREDICTIONS("loadPredictions"),
+    LOAD_SCORES("loadScores"),
     CONFUSION_MATRIX("confusionMatrix"),
     AUC("auc");
     public final String label;
-
+    public static Functions[] order = {LOAD_SCORES, LOAD_PREDICTIONS, COMPUTE, PREDICT, AUC, CONFUSION_MATRIX};
     Functions(String label) {
         this.label = label;
     }
@@ -20,5 +21,4 @@ public enum Functions {
         }
         throw new EnumConstantNotPresentException(Functions.class, String.format("Valued %s is not present", text));
     }
-
 }

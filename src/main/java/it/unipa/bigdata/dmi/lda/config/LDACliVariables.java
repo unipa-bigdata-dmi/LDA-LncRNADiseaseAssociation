@@ -5,21 +5,26 @@ import it.unipa.bigdata.dmi.lda.enums.Functions;
 import it.unipa.bigdata.dmi.lda.enums.Model;
 import it.unipa.bigdata.dmi.lda.enums.Version;
 import org.apache.commons.cli.Option;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public class LDACliVariables {
     private String predictionPath = null;
+    private String scoresPath = null;
     private String mdPath = null;
     private String mlPath = null;
     private String ldPath = null;
     private Double alpha = null;
     private Model model = null;
     private Version version = null;
+    private Level logLevel = null;
     private Set<Functions> function = null;
 
     /**
@@ -38,6 +43,22 @@ public class LDACliVariables {
                         System.err.println(String.format("Function must be one between %s",
                                 Arrays.stream(Functions.values()).map(m -> String.format("'%s'", m.label)).reduce((x, y) -> String.format("%s,%s", x, y)).get()));
                     }
+                case LOG_OPT:
+                    logLevel = Level.toLevel(option.getValue().toUpperCase());
+                    Logger.getRootLogger().setLevel(logLevel);
+                    break;
+                case LOG_FILE_OPT:
+                    FileAppender fa = new FileAppender();
+                    fa.setName("fileAppender");
+                    fa.setFile(option.getValue());
+                    fa.setLayout(new PatternLayout("%d{yy/MM/dd HH:mm:ss} %p %c{1}: %m%n"));
+                    fa.setThreshold(getLogLevel());
+                    fa.setAppend(false);
+                    fa.activateOptions();
+
+                    Logger.getRootLogger().setAdditivity(false);
+                    Logger.getRootLogger().addAppender(fa);
+                    break;
                 case ALPHA_OPT:
                     try {
                         alpha = Double.parseDouble(option.getValue());
@@ -45,8 +66,11 @@ public class LDACliVariables {
                     } catch (NumberFormatException e) {
                         System.err.println("Alpha parameter must be a double!");
                     }
-                case PATH_OPT:
+                case PREDICTION_PATH_OPT:
                     predictionPath = option.getValue();
+                    break;
+                case SCORES_PATH_OPT:
+                    scoresPath = option.getValue();
                     break;
                 case VERSION_OPT:
                     try {
@@ -114,6 +138,14 @@ public class LDACliVariables {
 
     public Set<Functions> getFunction() {
         return function;
+    }
+
+    public String getScoresPath() {
+        return scoresPath;
+    }
+
+    public Level getLogLevel() {
+        return logLevel == null ? Level.INFO : logLevel;
     }
 
     @Override

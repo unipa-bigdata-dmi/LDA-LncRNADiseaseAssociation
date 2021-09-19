@@ -4,32 +4,34 @@ import it.unipa.bigdata.dmi.lda.config.LDACli
 import it.unipa.bigdata.dmi.lda.factory.SparkFactory
 import it.unipa.bigdata.dmi.lda.interfaces.ModelInterface
 import it.unipa.bigdata.dmi.lda.model.{Prediction, PredictionFDR}
-import it.unipa.bigdata.dmi.lda.utility.ROCFunction
+import it.unipa.bigdata.dmi.lda.utility.{DatasetReader, ROCFunction}
+import org.apache.log4j.Logger
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.sql.functions.{col, count, lit}
-import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row, SparkSession}
+import org.apache.spark.sql.{Dataset, Encoders, Row, SparkSession}
 import org.graphframes.GraphFrame
 
 abstract class GraphframeAbstractModel() extends ModelInterface {
+  private val logger: Logger = Logger.getLogger(classOf[GraphframeAbstractModel])
   protected val sparkSession: SparkSession = SparkFactory.getSparkSession
   protected val sqlContext = new org.apache.spark.sql.SQLContext(sparkSession.sparkContext)
   protected val rocFunction: ROCFunction = ROCFunction()
-  protected var scores: DataFrame= _
-  protected var predictions: DataFrame = _
+  protected var scores: Dataset[Prediction] = _
+  protected var predictions: Dataset[PredictionFDR] = _
   protected val datasetReader: DatasetReader = new DatasetReader()
   protected var graphFrame: GraphFrame = _
 
   def getGraphFrame(): GraphFrame = {
     if (graphFrame == null) {
-      println("- Loading GraphFrame - Creating edges")
+      logger.info("Loading GraphFrame - Creating edges")
       val edges = datasetReader.getMirnaDisease().select(col("mirna").as("src"), col("disease").as("dst"), lit("mda").as("relationship"))
         .union(datasetReader.getMirnaLncrna().select(col("mirna").as("src"), col("lncrna").as("dst"), lit("mla").as("relationship")))
         .union(datasetReader.getAllCombination.select(col("lncrna").as("src"), col("disease").as("dst"), lit("lda").as("relationship")))
         .distinct()
         .repartition(360)
         .cache()
-      println(s"Cached edges ${edges.count} rows")
-      println("- Loading GraphFrame - Creating vertices")
+      logger.info(s"Cached edges ${edges.count} rows")
+      logger.info("Loading GraphFrame - Creating vertices")
       val lncrna = datasetReader.getLncRNA.select(col("lncrna").as("id"))
         .distinct.withColumn("type", lit("LncRNA"))
       val diseases = datasetReader.getDisease.select(col("disease").as("id"))
@@ -41,38 +43,53 @@ abstract class GraphframeAbstractModel() extends ModelInterface {
         .union(mirnas)
         .distinct
         .cache()
-      println(s"Cached vertex ${vertex.count} rows")
+      logger.info(s"Cached vertex ${vertex.count} rows")
       // Create a GraphFrame
       graphFrame = GraphFrame(vertex, edges)
     }
     graphFrame
   }
 
-  override def loadPredictions(): DataFrame = {
+  override def loadPredictions(): Dataset[PredictionFDR] = {
     assert(LDACli.getPredictionPath != null)
     loadPredictions(LDACli.getPredictionPath)
   }
 
-  protected def loadPredictions(path: String): DataFrame = {
-    predictions = sparkSession.read.parquet(path)
-    predictions
+  override def loadScores(): Dataset[Prediction] = {
+    assert(LDACli.getPredictionPath != null)
+    loadScores(LDACli.getScoresPath)
   }
 
+
   override def auc(): BinaryClassificationMetrics = {
-    val scores = loadPredictions()
-    println(s"------------\n${this.getClass.getSimpleName} AUC/PR curve")
-    val metrics = rocFunction.roc(scores)
-    println("------------")
-    metrics
+    if (predictions == null)
+      predictions = loadPredictions()
+        .as[PredictionFDR](Encoders.bean(classOf[PredictionFDR]))
+    auc(predictions)
   }
 
   override def confusionMatrix(): Dataset[Row] = {
-    val scores = loadPredictions().select(col("prediction"), col("gs"))
+    val cm = loadPredictions().select(col("prediction"), col("gs"))
       .groupBy("gs", "prediction").agg(count("gs").as("count"))
       .sort(col("gs").desc, col("prediction").desc)
-    println(s"------------\n${this.getClass.getSimpleName} Confusion Matrix")
-    scores.show(false)
-    println("------------")
+    logger.info(s"${this.getClass.getSimpleName} Confusion Matrix")
+    cm.show(false)
+    cm
+  }
+
+  protected def loadScores(path: String): Dataset[Prediction] = {
+    scores = sparkSession.read.parquet(path).as[Prediction](Encoders.bean(classOf[Prediction]))
     scores
+  }
+
+  protected def loadPredictions(path: String): Dataset[PredictionFDR] = {
+    predictions = sparkSession.read.parquet(path).as[PredictionFDR](Encoders.bean(classOf[PredictionFDR]))
+    predictions
+  }
+
+  def auc(fdr: Dataset[PredictionFDR]): BinaryClassificationMetrics = {
+    logger.info("AUC/PR curve")
+    val metrics = rocFunction.roc(fdr)
+    metrics
   }
 }

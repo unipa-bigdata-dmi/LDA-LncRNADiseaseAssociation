@@ -1,10 +1,12 @@
 package it.unipa.bigdata.dmi.lda.utility
 
 import it.unipa.bigdata.dmi.lda.model.PredictionFDR
+import org.apache.log4j.Logger
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
-import org.apache.spark.sql.{DataFrame, Encoders}
+import org.apache.spark.sql.Dataset
 
 case class ROCFunction() {
+  private val logger: Logger = Logger.getLogger(classOf[ROCFunction])
 
   /**
    * Create a binary classification metrics from the dataset of predictions given as parameter, then print AUC and PR.
@@ -17,20 +19,20 @@ case class ROCFunction() {
    * @param predictionAndLabels Dataset containing a column of the prediction scores and a column regarding the belonging class
    * @return The metrics used to print the AUC/PR values. Can be used to return the point of the ROC curve.
    */
-  def roc(predictionAndLabels: DataFrame): BinaryClassificationMetrics = {
+  def roc(predictionAndLabels: Dataset[PredictionFDR]): BinaryClassificationMetrics = {
     // Instantiate metrics object
-    val metrics = new BinaryClassificationMetrics(predictionAndLabels.rdd.map(r => (r.getDouble(0), r.getDouble(1))))
+    val metrics = new BinaryClassificationMetrics(predictionAndLabels.rdd.map(r => (r.getFdr(), if (r.getGs()) 1.0 else 0.0)))
 
     // AUPRC
     val auPRC = metrics.areaUnderPR
-    println(s"Area under precision-recall curve = $auPRC")
+    logger.info(s"Area under precision-recall curve = $auPRC")
 
     // ROC Curve
     val roc = metrics.roc
 
     // AUROC
     val auROC = metrics.areaUnderROC
-    println(s"Area under ROC = $auROC")
+    logger.info(s"Area under ROC = $auROC")
     metrics
   }
 }

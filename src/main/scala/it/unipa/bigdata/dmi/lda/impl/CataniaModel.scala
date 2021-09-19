@@ -5,20 +5,19 @@ import it.unipa.bigdata.dmi.lda.model.{Prediction, PredictionFDR}
 import org.apache.commons.lang.NotImplementedException
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.sql.functions.{col, count, lit, when}
-import org.apache.spark.sql.{DataFrame, Dataset, Row}
+import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row}
 
 class CataniaModel() extends GraphframeAbstractModel() {
 
-  override def loadPredictions(): DataFrame = {
+  override def loadPredictions(): Dataset[PredictionFDR] = {
     super.loadPredictions(s"resources/predictions/${LDACli.getVersion}/catania_fdr/")
   }
 
   override def auc(): BinaryClassificationMetrics = {
-    val scores = loadPredictions().select(lit(1) - col("fdr"), col("gs"))
-    println("------------\nCatania AUC/PR curve")
-    val metrics = rocFunction.roc(scores)
-    println("------------")
-    metrics
+    if (predictions == null)
+      predictions = loadPredictions().select(lit(1) - col("fdr"), col("gs"))
+        .as[PredictionFDR](Encoders.bean(classOf[PredictionFDR]))
+    auc(predictions)
   }
 
   override def confusionMatrix(): DataFrame = {
@@ -32,7 +31,13 @@ class CataniaModel() extends GraphframeAbstractModel() {
     scores
   }
 
-  override def compute(): DataFrame = throw new NotImplementedException()
+  override def compute(): Dataset[Prediction] = throw new NotImplementedException()
 
-  override def predict(): DataFrame = throw new NotImplementedException()
+  override def predict(): Dataset[PredictionFDR] = throw new NotImplementedException()
+
+  override def loadScores(): Dataset[Prediction] = {
+    if (scores == null)
+      super.loadScores(s"resources/predictions/${LDACli.getVersion}/catania/")
+    scores
+  }
 }
