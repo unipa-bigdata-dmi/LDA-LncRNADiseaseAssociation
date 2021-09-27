@@ -7,7 +7,6 @@ services:
       dockerfile: ./docker/Dockerfile
     container_name: lda
     volumes:
-    - ./src:/usr/src/app/src
-    - ./jars/:/usr/src/app/jars/
+    - ./:/usr/src/app/
     - ../../../.m2:/root/.m2 # TODO: cambiare in directory locale al progetto
-    command: bash -c "mvn -f /usr/src/app/pom.xml clean install && mv /usr/src/app/target/* /usr/src/app/jars/"
+    command: bash -c "mvn -f /usr/src/app/pom.xml clean install"
