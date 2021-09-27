@@ -6,7 +6,7 @@ lda.iml
 
 target/
 
-resources/*
+resources/predictions/*
 
 resources.zip
 
