@@ -2,6 +2,7 @@ package it.unipa.bigdata.dmi.lda.impl
 
 import it.unipa.bigdata.dmi.lda.builder.PredictionBuilder
 import it.unipa.bigdata.dmi.lda.config.LDACli
+import it.unipa.bigdata.dmi.lda.factory.LoggerFactory
 import it.unipa.bigdata.dmi.lda.model.{Prediction, PredictionFDR}
 import it.unipa.bigdata.dmi.lda.utility.FDRFunction
 import org.apache.log4j.Logger
@@ -10,7 +11,7 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{Column, DataFrame, Dataset, Encoders}
 
 class PValueModel() extends GraphframeAbstractModel() {
-  private val logger: Logger = Logger.getLogger(classOf[PValueModel])
+  private val logger: Logger = LoggerFactory.getLogger(classOf[PValueModel])
 
   override def compute(): Dataset[Prediction] = {
     getGraphFrame()
@@ -104,11 +105,11 @@ class PValueModel() extends GraphframeAbstractModel() {
 
   override def loadPredictions(): Dataset[PredictionFDR] = {
     if (predictions == null) {
-      val tmp = sparkSession.read.parquet(s"resources/predictions/${LDACli.getVersion}/pvalue_fdr/").withColumnRenamed("PValue","score")
-      val names = classOf[PredictionFDR].getDeclaredFields.union(classOf[PredictionFDR].getSuperclass.getDeclaredFields).map(f=>f.getName)
-      val mapColumn: Column = map(tmp.drop(names:_*).columns.tail.flatMap(name => Seq(lit(name), col(s"$name"))): _*)
-      predictions= tmp.withColumn("parameters",mapColumn).select("parameters",names:_*)
-        .as[PredictionFDR](Encoders.bean(classOf[PredictionFDR])).cache()
+      val tmp = sparkSession.read.parquet(s"resources/predictions/${LDACli.getVersion}/pvalue_fdr/").withColumnRenamed("PValue", "score")
+      val names = classOf[PredictionFDR].getDeclaredFields.union(classOf[PredictionFDR].getSuperclass.getDeclaredFields).map(f => f.getName)
+      val mapColumn: Column = map(tmp.drop(names: _*).columns.tail.flatMap(name => Seq(lit(name), col(s"$name"))): _*)
+      predictions = tmp.withColumn("parameters", mapColumn).select("parameters", names: _*)
+        .as[PredictionFDR](Encoders.bean(classOf[PredictionFDR])).repartition(200).cache()
     }
     logger.info(s"Caching pValue predictions: ${predictions.count()}")
     predictions
@@ -120,8 +121,12 @@ class PValueModel() extends GraphframeAbstractModel() {
       predictions = loadPredictions()
     }
     logger.info("AUC: computing")
-    auc(predictions.withColumn("fdr",lit(1) - col("fdr") as "fdr")
-      .as[PredictionFDR](Encoders.bean(classOf[PredictionFDR])))
+    val aucInput = predictions.withColumn("fdr", lit(1) - col("fdr") as "fdr")
+      .as[PredictionFDR](Encoders.bean(classOf[PredictionFDR])).cache()
+    aucInput.count()
+    val res = auc(aucInput)
+    aucInput.unpersist()
+    res
   }
 
   override def confusionMatrix(): DataFrame = {
@@ -135,9 +140,9 @@ class PValueModel() extends GraphframeAbstractModel() {
 
   override def loadScores(): Dataset[Prediction] = {
     if (scores == null)
-      scores=sparkSession.read.parquet(s"resources/predictions/${LDACli.getVersion}/pvalue/")
-        .withColumnRenamed("PValue","score").as[Prediction](Encoders.bean(classOf[Prediction]))
-          .cache()
+      scores = sparkSession.read.parquet(s"resources/predictions/${LDACli.getVersion}/pvalue/")
+        .withColumnRenamed("PValue", "score").as[Prediction](Encoders.bean(classOf[Prediction]))
+        .cache()
     logger.info(s"Caching pValue scores: ${scores.count()}")
     scores
   }

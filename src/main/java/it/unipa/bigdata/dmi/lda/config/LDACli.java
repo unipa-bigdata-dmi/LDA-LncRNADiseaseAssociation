@@ -1,13 +1,14 @@
 package it.unipa.bigdata.dmi.lda.config;
 
-import it.unipa.bigdata.dmi.lda.LncRNADiseaseApplication;
 import it.unipa.bigdata.dmi.lda.enums.CliOption;
 import it.unipa.bigdata.dmi.lda.enums.Functions;
 import it.unipa.bigdata.dmi.lda.enums.Model;
 import it.unipa.bigdata.dmi.lda.enums.Version;
+import it.unipa.bigdata.dmi.lda.factory.LoggerFactory;
 import it.unipa.bigdata.dmi.lda.factory.ModelFactory;
 import it.unipa.bigdata.dmi.lda.interfaces.ModelInterface;
 import org.apache.commons.cli.*;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.util.Arrays;
@@ -19,7 +20,7 @@ import java.util.Set;
 public class LDACli {
     private static CommandLine cmd = null;
     private static LDACliVariables variables = null;
-    final static Logger logger = Logger.getLogger(LDACli.class);
+    private static Logger logger = null;
     private LDACli() {
     }
 
@@ -39,6 +40,7 @@ public class LDACli {
         try {
             cmd = parser.parse(options, args);
             variables = new LDACliVariables(cmd.getOptions());
+            logger = LoggerFactory.getLogger(LDACli.class);
         } catch (MissingOptionException e) {
             logger.error(e);
             printHelp();
@@ -110,5 +112,9 @@ public class LDACli {
 
     public static Set<Functions> getFunction() {
         return variables.getFunction();
+    }
+
+    public static Level getLogLevel(){
+        return variables.getLogLevel();
     }
 }

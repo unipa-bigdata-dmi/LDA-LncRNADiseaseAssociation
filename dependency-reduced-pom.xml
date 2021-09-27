@@ -79,6 +79,9 @@
               </excludes>
             </filter>
           </filters>
+          <transformers>
+            <transformer />
+          </transformers>
         </configuration>
       </plugin>
       <plugin>

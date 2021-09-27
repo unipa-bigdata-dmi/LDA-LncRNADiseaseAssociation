@@ -1,6 +1,7 @@
 package it.unipa.bigdata.dmi.lda.impl
 
 import it.unipa.bigdata.dmi.lda.config.LDACli
+import it.unipa.bigdata.dmi.lda.factory.LoggerFactory
 import it.unipa.bigdata.dmi.lda.model.{Prediction, PredictionFDR}
 import org.apache.commons.lang.NotImplementedException
 import org.apache.log4j.Logger
@@ -9,7 +10,7 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{Column, Dataset, Encoders, Row}
 
 class CentralityModel() extends GraphframeAbstractModel() {
-  private val logger: Logger = Logger.getLogger(classOf[CentralityModel])
+  private val logger: Logger = LoggerFactory.getLogger(classOf[CentralityModel])
 
   override def loadPredictions(): Dataset[PredictionFDR] = {
     if (predictions == null) {

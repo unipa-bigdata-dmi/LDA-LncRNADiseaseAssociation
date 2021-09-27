@@ -46,8 +46,6 @@ public class LDACliVariables {
                     }
                 case LOG_OPT:
                     logLevel = Level.toLevel(option.getValue().toUpperCase());
-                    SparkFactory.getJavaSparkContext().setLogLevel(logLevel.toString());
-                    Logger.getRootLogger().setLevel(logLevel);
                     break;
                 case LOG_FILE_OPT:
                     FileAppender fa = new FileAppender();
@@ -147,7 +145,7 @@ public class LDACliVariables {
     }
 
     public Level getLogLevel() {
-        return logLevel == null ? Level.INFO : logLevel;
+        return logLevel;
     }
 
     @Override

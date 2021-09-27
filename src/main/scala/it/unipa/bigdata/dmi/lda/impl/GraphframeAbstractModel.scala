@@ -1,7 +1,7 @@
 package it.unipa.bigdata.dmi.lda.impl
 
 import it.unipa.bigdata.dmi.lda.config.LDACli
-import it.unipa.bigdata.dmi.lda.factory.SparkFactory
+import it.unipa.bigdata.dmi.lda.factory.{LoggerFactory, SparkFactory}
 import it.unipa.bigdata.dmi.lda.interfaces.ModelInterface
 import it.unipa.bigdata.dmi.lda.model.{Prediction, PredictionFDR}
 import it.unipa.bigdata.dmi.lda.utility.{DatasetReader, ROCFunction}
@@ -12,7 +12,7 @@ import org.apache.spark.sql.{Dataset, Encoders, Row, SparkSession}
 import org.graphframes.GraphFrame
 
 abstract class GraphframeAbstractModel() extends ModelInterface {
-  private val logger: Logger = Logger.getLogger(classOf[GraphframeAbstractModel])
+  private val logger: Logger = LoggerFactory.getLogger(classOf[GraphframeAbstractModel])
   protected val sparkSession: SparkSession = SparkFactory.getSparkSession
   protected val sqlContext = new org.apache.spark.sql.SQLContext(sparkSession.sparkContext)
   protected val rocFunction: ROCFunction = ROCFunction()

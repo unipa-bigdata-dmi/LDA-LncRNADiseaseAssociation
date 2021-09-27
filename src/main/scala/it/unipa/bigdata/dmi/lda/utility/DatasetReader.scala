@@ -1,7 +1,7 @@
 package it.unipa.bigdata.dmi.lda.utility
 
 import it.unipa.bigdata.dmi.lda.config.LDACli
-import it.unipa.bigdata.dmi.lda.factory.SparkFactory
+import it.unipa.bigdata.dmi.lda.factory.{LoggerFactory, SparkFactory}
 import it.unipa.bigdata.dmi.lda.interfaces.DatasetInterface
 import org.apache.log4j.Logger
 import org.apache.spark.sql.functions.col
@@ -10,7 +10,7 @@ import org.apache.spark.sql.{Dataset, Row, SparkSession}
 class DatasetReader extends DatasetInterface {
   private val sparkSession: SparkSession = SparkFactory.getSparkSession
   val sqlContext = new org.apache.spark.sql.SQLContext(sparkSession.sparkContext)
-  private val logger: Logger = Logger.getLogger(classOf[DatasetReader])
+  private val logger: Logger = LoggerFactory.getLogger(classOf[DatasetReader])
 
   import sqlContext.implicits._
 

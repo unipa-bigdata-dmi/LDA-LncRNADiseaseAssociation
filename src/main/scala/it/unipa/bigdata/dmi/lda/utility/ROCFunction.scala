@@ -1,12 +1,13 @@
 package it.unipa.bigdata.dmi.lda.utility
 
-import it.unipa.bigdata.dmi.lda.model.PredictionFDR
+import it.unipa.bigdata.dmi.lda.factory.LoggerFactory
+import it.unipa.bigdata.dmi.lda.model.{Prediction, PredictionFDR}
 import org.apache.log4j.Logger
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.sql.Dataset
 
 case class ROCFunction() {
-  private val logger: Logger = Logger.getLogger(classOf[ROCFunction])
+  private val logger: Logger = LoggerFactory.getLogger(classOf[ROCFunction])
 
   /**
    * Create a binary classification metrics from the dataset of predictions given as parameter, then print AUC and PR.
@@ -21,8 +22,11 @@ case class ROCFunction() {
    */
   def roc(predictionAndLabels: Dataset[PredictionFDR]): BinaryClassificationMetrics = {
     // Instantiate metrics object
-    val metrics = new BinaryClassificationMetrics(predictionAndLabels.rdd.map(r => (r.getFdr(), if (r.getGs()) 1.0 else 0.0)))
-
+//    val input = predictionAndLabels.rdd.map(r => (r.getFdr.doubleValue(), if (r.getGs()) 1.0 else 0.0)).cache()
+    val input = predictionAndLabels.toDF().rdd.map(r => (r.getDouble(r.fieldIndex(PredictionFDR.getFdrCol.toString())), if (r.getBoolean(r.fieldIndex(Prediction.getGsCol.toString()))) 1.0 else 0.0)).cache()
+    input.count()
+    val metrics = new BinaryClassificationMetrics(input)
+    input.unpersist()
     // AUPRC
     val auPRC = metrics.areaUnderPR
     logger.info(s"Area under precision-recall curve = $auPRC")

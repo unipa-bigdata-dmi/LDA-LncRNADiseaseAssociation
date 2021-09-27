@@ -1,6 +1,7 @@
 package it.unipa.bigdata.dmi.lda.impl
 
 import it.unipa.bigdata.dmi.lda.config.LDACli
+import it.unipa.bigdata.dmi.lda.factory.LoggerFactory
 import it.unipa.bigdata.dmi.lda.model.{Prediction, PredictionFDR}
 import org.apache.commons.lang.NotImplementedException
 import org.apache.log4j.Logger
@@ -9,7 +10,7 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{Column, DataFrame, Dataset, Encoders}
 
 class CataniaModel() extends GraphframeAbstractModel() {
-  private val logger: Logger = Logger.getLogger(classOf[CataniaModel])
+  private val logger: Logger = LoggerFactory.getLogger(classOf[CataniaModel])
 
   override def loadPredictions(): Dataset[PredictionFDR] = {
     if (predictions == null) {
@@ -30,7 +31,7 @@ class CataniaModel() extends GraphframeAbstractModel() {
       predictions = loadPredictions()
     }
     logger.info("AUC: computing")
-    auc(predictions.withColumn("fdr",lit(1) - col("fdr") as "fdr")
+    auc(predictions.withColumn("fdr", lit(1) - col("fdr") as "fdr")
       .as[PredictionFDR](Encoders.bean(classOf[PredictionFDR])))
   }
 

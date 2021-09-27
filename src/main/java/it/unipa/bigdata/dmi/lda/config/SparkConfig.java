@@ -12,7 +12,7 @@ public class SparkConfig {
 
     private String driverCores = "6";
 
-    private String logLevel = Level.ERROR.toString();
+//    private String logLevel = Level.ERROR.toString();
 
     public SparkConf conf() {
         return new SparkConf()
@@ -30,9 +30,9 @@ public class SparkConfig {
         return masterUri;
     }
 
-    public String getLogLevel() {
-        return logLevel;
-    }
+//    public String getLogLevel() {
+//        return logLevel;
+//    }
 
 
 }
