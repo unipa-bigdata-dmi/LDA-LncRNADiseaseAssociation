@@ -14,7 +14,7 @@ class CataniaModel() extends GraphframeAbstractModel() {
 
   override def loadPredictions(): Dataset[PredictionFDR] = {
     if (predictions == null) {
-      val tmp = sparkSession.read.parquet(s"resources/predictions/${LDACli.getVersion}/catania_fdr/").withColumnRenamed("PValue", "score")
+      val tmp = sparkSession.read.parquet(s"resources/predictions/${LDACli.getVersion}/catania_fdr/").withColumn("gs",when(col("gs").equalTo(1.0), true).otherwise(false).as("gs"))
       val names = classOf[PredictionFDR].getDeclaredFields.union(classOf[PredictionFDR].getSuperclass.getDeclaredFields).map(f => f.getName)
       val mapColumn: Column = map(tmp.drop(names: _*).columns.tail.flatMap(name => Seq(lit(name), col(s"$name"))): _*)
       predictions = tmp.withColumn("parameters", mapColumn).select("parameters", names: _*)
