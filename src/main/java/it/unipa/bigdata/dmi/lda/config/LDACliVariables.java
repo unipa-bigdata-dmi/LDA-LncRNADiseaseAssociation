@@ -4,7 +4,6 @@ import it.unipa.bigdata.dmi.lda.enums.CliOption;
 import it.unipa.bigdata.dmi.lda.enums.Functions;
 import it.unipa.bigdata.dmi.lda.enums.Model;
 import it.unipa.bigdata.dmi.lda.enums.Version;
-import it.unipa.bigdata.dmi.lda.factory.SparkFactory;
 import org.apache.commons.cli.Option;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
@@ -26,6 +25,8 @@ public class LDACliVariables {
     private Model model = null;
     private Version version = null;
     private Level logLevel = null;
+    private String outputPath = null;
+    private Integer outputPartitions = null;
     private Set<Functions> function = null;
 
     /**
@@ -97,6 +98,15 @@ public class LDACliVariables {
                 case ML_OPT:
                     mlPath = option.getValue();
                     break;
+                case OUTPUT_OPT:
+                    Arrays.stream(option.getValues()).forEach(v -> {
+                        try {
+                            outputPartitions = Integer.parseInt(v);
+                        } catch (NumberFormatException e) {
+                            outputPath = v;
+                        }
+                    });
+                    break;
                 default:
                     break;
             }
@@ -146,6 +156,14 @@ public class LDACliVariables {
 
     public Level getLogLevel() {
         return logLevel;
+    }
+
+    public String getOutputPath() {
+        return outputPath;
+    }
+
+    public Integer getOutputPartitions() {
+        return outputPartitions;
     }
 
     @Override

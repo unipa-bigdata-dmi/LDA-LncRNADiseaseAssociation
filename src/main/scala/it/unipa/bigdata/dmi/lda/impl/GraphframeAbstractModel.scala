@@ -21,6 +21,22 @@ abstract class GraphframeAbstractModel() extends ModelInterface {
   protected val datasetReader: DatasetReader = new DatasetReader()
   protected var graphFrame: GraphFrame = _
 
+  def saveResults(ds: Dataset[_]): Unit = {
+    val outputPath = LDACli.getOutputPath
+    val model = this.getClass.getSimpleName.replace("Model", "").toLowerCase()
+    if (outputPath != null) {
+      val outputPartitions = LDACli.getOutputPartitions
+      val timePath = java.time.LocalDate.now.toString.replaceAll("-", "")
+      val claz = Thread.currentThread.getStackTrace()(2).getMethodName
+      logger.info(s"Saving ${model}_${claz} into '${outputPath}${timePath}/${model}_${claz}' with ${outputPartitions} partitions")
+      ds
+        .coalesce(outputPartitions)
+        .write
+        .option("header", "true")
+        .csv(s"${outputPath}${timePath}/${model}_${claz}")
+    }
+  }
+
   def getGraphFrame(): GraphFrame = {
     if (graphFrame == null) {
       logger.info("Loading GraphFrame - Creating edges")
