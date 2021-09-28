@@ -67,7 +67,7 @@ Il modello *HGLDA* proposto dagli autori si basa sul calcolo della distribuzione
 $$ --> 
 
 <div align="center"><img style="background: white;" src="svg/IPcRAbI88E.svg"></div>
-in cui <!-- $N$ --> <img style="transform: translateY(0.1em); background: white;" src="svg/t7OGtEB30H.svg"> è il numero totale di miRNA associati ai lncRNA o alle diseases, <!-- $M$ --> <img style="transform: translateY(0.1em); background: white;" src="svg/MjPvGyJCq0.svg"> è il numero di miRNA che interagiscono con il lncRNA dato, <!-- $L$ --> <img style="transform: translateY(0.1em); background: white;" src="svg/kcytsTpLZ2.svg"> è il numero di miRNA che interagiscono con la disease data, infine <!-- $x$ --> <img style="transform: translateY(0.1em); background: white;" src="svg/iy615UO9gm.svg"> è il numero di miRNA che interagiscono con entrambi il lncRNA e la disease.
+in cui \\(N\\) è il numero totale di miRNA associati ai lncRNA o alle diseases, \\(M\\) è il numero di miRNA che interagiscono con il lncRNA dato, \\(L\\) è il numero di miRNA che interagiscono con la disease data, infine \\(x\\) è il numero di miRNA che interagiscono con entrambi il lncRNA e la disease.
 
 Una volta calcolato il P-value, viene applicata la correzione FDR in modo da identificare le associazioni con tale valore minore di 0.05 come potenziali associazioni lncRNA-disease.
 ___
