@@ -74,17 +74,15 @@ Una volta calcolato il P-value, viene applicata la correzione FDR (0.05) in modo
 
 # Modello Centralità
 Tre varianti di funzione score sono state implementate, in cui
-<!-- $$M_{LD}[i,j]$$ --> 
-<div align="center"><img style="background: white;" src="svg/qmPAha9b2j.svg"></div> rappresenta il numero di miRNA in comune tra il lncRNA `i` e la malattia `j`
-<!-- $$M_{LL}[i,j]$$ --> 
-<div align="center"><img style="background: white;" src="svg/u7hsphbQpf.svg"></div> rappresenta il numero di miRNA in comune tra il lncRNA `i` e il lncRNA `j`
-<!-- $$n=min(M_{LL}[i,i], n_j)$$ --> 
-<div align="center"><img style="background: white;" src="svg/0LMBI59aFG.svg"></div>
-<!-- $$n_j$$ --> 
-<div align="center"><img style="background: white;" src="svg/0bh1GCR1jo.svg"></div> è il numero di miRNA associati alla malattia `j`
-<!-- $$ \text{Funzione 1: }S(l_i,d_j)=\alpha\Big(\frac{M_{LD}[i,j]}{n}\Big)+(1-\alpha)\Big(\frac{\sum_x M_{LL}[i,x] * M_{LD}[x,j]}{\sum_x M_{LL}[x,x]*n_j}\Big)$$ --> 
+- `M_{LD}[i,j]` rappresenta il numero di miRNA in comune tra il lncRNA `i` e la malattia `j`
+- `M_{LL}[i,j]` rappresenta il numero di miRNA in comune tra il lncRNA `i` e il lncRNA `j`
+- `n=min(M_{LL}[i,i], n_j)`
+- `n_j` è il numero di miRNA associati alla malattia `j`
+<!-- $$
+\text{Funzione 1: }S(l_i,d_j)=\alpha\Big(\frac{M_{LD}[i,j]}{n}\Big)+(1-\alpha)\Big(\frac{\sum_x M_{LL}[i,x] * M_{LD}[x,j]}{\sum_x M_{LL}[x,x]*n_j}\Big)
+$$ --> 
 
-<div align="center"><img style="background: white;" src="svg/iHvUM90UgN.svg"></div>
+<div align="center"><img style="background: white;" src="svg/hwraIa9rfe.svg"></div>
 ___
 
 # Build
