@@ -67,9 +67,24 @@ Il modello *HGLDA* proposto dagli autori si basa sul calcolo della distribuzione
 $$ --> 
 
 <div align="center"><img style="background: white;" src="svg/IPcRAbI88E.svg"></div>
-in cui \\(N\\) è il numero totale di miRNA associati ai lncRNA o alle diseases, \\(M\\) è il numero di miRNA che interagiscono con il lncRNA dato, \\(L\\) è il numero di miRNA che interagiscono con la disease data, infine \\(x\\) è il numero di miRNA che interagiscono con entrambi il lncRNA e la disease.
 
-Una volta calcolato il P-value, viene applicata la correzione FDR in modo da identificare le associazioni con tale valore minore di 0.05 come potenziali associazioni lncRNA-disease.
+in cui `N` è il numero totale di miRNA associati ai lncRNA o alle diseases, `M` è il numero di miRNA che interagiscono con il lncRNA dato, `L` è il numero di miRNA che interagiscono con la disease data, infine `x` è il numero di miRNA che interagiscono con entrambi il lncRNA e la disease.
+
+Una volta calcolato il P-value, viene applicata la correzione FDR (0.05) in modo da identificare le potenziali associazioni lncRNA-disease.
+
+# Modello Centralità
+Tre varianti di funzione score sono state implementate, in cui
+<!-- $$M_{LD}[i,j]$$ --> 
+<div align="center"><img style="background: white;" src="svg/qmPAha9b2j.svg"></div> rappresenta il numero di miRNA in comune tra il lncRNA `i` e la malattia `j`
+<!-- $$M_{LL}[i,j]$$ --> 
+<div align="center"><img style="background: white;" src="svg/u7hsphbQpf.svg"></div> rappresenta il numero di miRNA in comune tra il lncRNA `i` e il lncRNA `j`
+<!-- $$n=min(M_{LL}[i,i], n_j)$$ --> 
+<div align="center"><img style="background: white;" src="svg/0LMBI59aFG.svg"></div>
+<!-- $$n_j$$ --> 
+<div align="center"><img style="background: white;" src="svg/0bh1GCR1jo.svg"></div> è il numero di miRNA associati alla malattia `j`
+<!-- $$ \text{Funzione 1: }S(l_i,d_j)=\alpha\Big(\frac{M_{LD}[i,j]}{n}\Big)+(1-\alpha)\Big(\frac{\sum_x M_{LL}[i,x] * M_{LD}[x,j]}{\sum_x M_{LL}[x,x]*n_j}\Big)$$ --> 
+
+<div align="center"><img style="background: white;" src="svg/iHvUM90UgN.svg"></div>
 ___
 
 # Build
