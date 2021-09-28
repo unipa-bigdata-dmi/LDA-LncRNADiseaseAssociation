@@ -90,7 +90,6 @@ class PValueModel() extends GraphframeAbstractModel() {
     L.unpersist()
     associations.unpersist()
     logger.info(s"Caching scores: ${scores.count()}")
-    logger.info("pValue scores")
     scores.show(false)
     saveResults(scores
       .select("lncrna", "disease", "score", "gs"))

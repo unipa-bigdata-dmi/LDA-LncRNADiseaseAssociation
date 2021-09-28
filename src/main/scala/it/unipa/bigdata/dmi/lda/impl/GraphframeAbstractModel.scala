@@ -8,7 +8,7 @@ import it.unipa.bigdata.dmi.lda.utility.{DatasetReader, ROCFunction}
 import org.apache.log4j.Logger
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.sql.functions.{col, count, lit}
-import org.apache.spark.sql.{Dataset, Encoders, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row, SparkSession}
 import org.graphframes.GraphFrame
 
 abstract class GraphframeAbstractModel() extends ModelInterface {
@@ -21,7 +21,7 @@ abstract class GraphframeAbstractModel() extends ModelInterface {
   protected val datasetReader: DatasetReader = new DatasetReader()
   protected var graphFrame: GraphFrame = _
 
-  def saveResults(ds: Dataset[_]): Unit = {
+  def saveResults(ds: DataFrame): Unit = {
     val outputPath = LDACli.getOutputPath
     val model = this.getClass.getSimpleName.replace("Model", "").toLowerCase()
     if (outputPath != null) {
