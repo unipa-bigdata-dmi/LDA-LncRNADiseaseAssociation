@@ -43,7 +43,7 @@ public class LDACli {
             variables = new LDACliVariables(cmd.getOptions());
             logger = LoggerFactory.getLogger(LDACli.class);
         } catch (MissingOptionException e) {
-            logger.error(e);
+            e.printStackTrace();
             printHelp();
         }
     }
@@ -124,6 +124,6 @@ public class LDACli {
     }
 
     public static Integer getOutputPartitions() {
-        return variables.getOutputPartitions() == null ? 200 : variables.getOutputPartitions();
+        return variables.getOutputPartitions() == null ? 1 : variables.getOutputPartitions();
     }
 }
