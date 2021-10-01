@@ -83,7 +83,6 @@ Tre varianti di funzione score sono state implementate, in cui
 $$ --> 
 
 <div align="center"><img style="background: white;" src="svg/hwraIa9rfe.svg"></div>
-___
 
 # Build
 There are two ways to build this project:
