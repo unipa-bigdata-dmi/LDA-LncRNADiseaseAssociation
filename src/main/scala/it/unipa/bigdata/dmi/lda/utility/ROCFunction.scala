@@ -6,6 +6,12 @@ import org.apache.log4j.Logger
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.sql.Dataset
 
+import be.cylab.java.roc.Roc;
+import be.cylab.java.roc.RocCoordinates;
+import be.cylab.java.roc.Utils;
+
+import collection.JavaConverters._
+
 case class ROCFunction() {
   private val logger: Logger = LoggerFactory.getLogger(classOf[ROCFunction])
 
@@ -37,6 +43,16 @@ case class ROCFunction() {
     // AUROC
     val auROC = metrics.areaUnderROC
     logger.info(s"Area under ROC = $auROC")
+    // Plot
+    plot(predictionAndLabels)
     metrics
+  }
+  
+  def plot(dataset:Dataset[PredictionFDR]):Unit = {
+    val results = dataset.collect()
+    val scores = results.map(r => r.getFdr.toDouble)
+    val gs = results.map(r=>r.getGs.booleanValue())
+    val roc_plot = new Roc(scores,gs)
+    roc_plot.computeRocPointsAndGenerateCurve("resources/roc_plot.png")
   }
 }

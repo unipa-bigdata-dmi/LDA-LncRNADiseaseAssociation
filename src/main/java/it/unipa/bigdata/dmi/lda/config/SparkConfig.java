@@ -8,7 +8,7 @@ public class SparkConfig {
 
     private String masterUri = "local[*]";
 
-    private String driverMemory = "6G";
+    private String driverMemory = "4G";
 
     private String driverCores = "6";
 

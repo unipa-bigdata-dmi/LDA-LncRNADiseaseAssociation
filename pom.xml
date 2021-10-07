@@ -70,6 +70,12 @@
             <version>1.4</version>
         </dependency>
 
+		<dependency>
+    		<groupId>be.cylab</groupId>
+  			<artifactId>java-roc</artifactId>
+   			<version>0.0.4</version>
+		</dependency>
+
     </dependencies>
 
     <!-- REPOSITORY FOR GRAPHFRAME	-->
