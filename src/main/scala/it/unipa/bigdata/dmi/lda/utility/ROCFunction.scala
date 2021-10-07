@@ -11,6 +11,7 @@ import be.cylab.java.roc.RocCoordinates;
 import be.cylab.java.roc.Utils;
 
 import collection.JavaConverters._
+import org.apache.spark.rdd.RDD
 
 case class ROCFunction() {
   private val logger: Logger = LoggerFactory.getLogger(classOf[ROCFunction])
@@ -44,14 +45,14 @@ case class ROCFunction() {
     val auROC = metrics.areaUnderROC
     logger.info(s"Area under ROC = $auROC")
     // Plot
-    plot(predictionAndLabels)
+    plot(input)
     metrics
   }
   
-  def plot(dataset:Dataset[PredictionFDR]):Unit = {
-    val results = dataset.collect()
-    val scores = results.map(r => r.getFdr.toDouble)
-    val gs = results.map(r=>r.getGs.booleanValue())
+  def plot(dataset:RDD[(Double,Double)]):Unit = {
+    val results = dataset.map(r=> (r._1,if (r._2==1.0) true else false)).collect()
+    val scores = results.map(r => r._1)
+    val gs = results.map(r=>r._2)
     val roc_plot = new Roc(scores,gs)
     roc_plot.computeRocPointsAndGenerateCurve("resources/roc_plot.png")
   }
