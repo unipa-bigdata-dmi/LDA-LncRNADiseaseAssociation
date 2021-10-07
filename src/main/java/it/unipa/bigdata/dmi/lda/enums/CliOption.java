@@ -79,6 +79,13 @@ public enum CliOption {
             .desc("csv path for the dataset of lncRNA-disease associations. See README for file format.")
             .required(false)
             .build()),
+    OUTPUT_OPT("o",Option.builder("o")
+            .longOpt("outputPath")
+            .hasArgs()
+            .argName("output parquet path for the results")
+            .desc("csv path for directory in which save the outputs. File will be stored as CSV. It is possible to specify the number of partitions")
+            .required(false)
+            .build()),
     ALPHA_OPT("a", Option.builder("a")
             .longOpt("alpha")
             .hasArg()

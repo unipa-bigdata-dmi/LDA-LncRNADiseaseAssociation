@@ -21,6 +21,7 @@ public class LDACli {
     private static CommandLine cmd = null;
     private static LDACliVariables variables = null;
     private static Logger logger = null;
+
     private LDACli() {
     }
 
@@ -42,7 +43,7 @@ public class LDACli {
             variables = new LDACliVariables(cmd.getOptions());
             logger = LoggerFactory.getLogger(LDACli.class);
         } catch (MissingOptionException e) {
-            logger.error(e);
+            e.printStackTrace();
             printHelp();
         }
     }
@@ -114,7 +115,15 @@ public class LDACli {
         return variables.getFunction();
     }
 
-    public static Level getLogLevel(){
+    public static Level getLogLevel() {
         return variables.getLogLevel();
+    }
+
+    public static String getOutputPath() {
+        return variables.getOutputPath();
+    }
+
+    public static Integer getOutputPartitions() {
+        return variables.getOutputPartitions() == null ? 1 : variables.getOutputPartitions();
     }
 }

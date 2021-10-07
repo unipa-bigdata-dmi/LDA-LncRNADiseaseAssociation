@@ -8,7 +8,7 @@ import it.unipa.bigdata.dmi.lda.utility.{DatasetReader, ROCFunction}
 import org.apache.log4j.Logger
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.sql.functions.{col, count, lit}
-import org.apache.spark.sql.{Dataset, Encoders, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row, SparkSession}
 import org.graphframes.GraphFrame
 
 abstract class GraphframeAbstractModel() extends ModelInterface {
@@ -20,6 +20,22 @@ abstract class GraphframeAbstractModel() extends ModelInterface {
   protected var predictions: Dataset[PredictionFDR] = _
   protected val datasetReader: DatasetReader = new DatasetReader()
   protected var graphFrame: GraphFrame = _
+
+  def saveResults(ds: DataFrame): Unit = {
+    val outputPath = LDACli.getOutputPath
+    val model = this.getClass.getSimpleName.replace("Model", "").toLowerCase()
+    if (outputPath != null) {
+      val outputPartitions = LDACli.getOutputPartitions
+      val timePath = java.time.LocalDate.now.toString.replaceAll("-", "")
+      val claz = Thread.currentThread.getStackTrace()(2).getMethodName
+      logger.info(s"Saving ${model}_${claz} into '${outputPath}${timePath}/${model}_${claz}' with ${outputPartitions} partitions")
+      ds
+        .coalesce(outputPartitions)
+        .write
+        .option("header", "true")
+        .csv(s"${outputPath}${timePath}/${model}_${claz}")
+    }
+  }
 
   def getGraphFrame(): GraphFrame = {
     if (graphFrame == null) {
