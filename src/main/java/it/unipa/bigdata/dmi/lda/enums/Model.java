@@ -1,8 +1,21 @@
 package it.unipa.bigdata.dmi.lda.enums;
 
+/**
+ * List of the implemented models.
+ * @implNote If new models are implemented, add to this list.
+ */
 public enum Model {
+    /**
+     * @see it.unipa.bigdata.dmi.lda.impl.CentralityModel
+     */
     Centrality("centrality"),
+    /**
+     * @see it.unipa.bigdata.dmi.lda.impl.PValueModel
+     */
     pValue("pvalue"),
+    /**
+     * @see it.unipa.bigdata.dmi.lda.impl.CataniaModel
+     */
     Catania("catania");
     public final String label;
 

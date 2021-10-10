@@ -11,6 +11,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * Configure the Spark environment using a property file located at {@code src/main/resources/spark.properties}. If the file is not available, use standard configurations.
+ * See <a href="https://spark.apache.org/docs/2.4.5/configuration.html#application-properties">Spark 2.4.5 Documentation</a> for more configurations.
+ *
+ * @author Armando La Placa
+ */
 public class SparkConfig {
     private static Logger logger = LoggerFactory.getLogger(SparkConfig.class);
     private String appName = "LDA";
@@ -19,6 +25,11 @@ public class SparkConfig {
 
     private Map<String, String> otherProperties = new HashMap<>();
 
+    /**
+     * Load the file properties and return the corresponding spark configuration
+     *
+     * @return The configured Spark Configuration
+     */
     public SparkConf conf() {
         try {
             loadProperties();
@@ -32,6 +43,11 @@ public class SparkConfig {
         return sc;
     }
 
+    /**
+     * Load the properties located at {@code src/main/resources/spark.properties}.
+     *
+     * @throws IOException If errors occur during the property file opening.
+     */
     private void loadProperties() throws IOException {
         Properties properties = new Properties();
         properties.load(new InputStreamReader(new FileInputStream("src/main/resources/spark.properties")));
@@ -49,11 +65,6 @@ public class SparkConfig {
 
     public String getMasterUri() {
         return masterUri;
-    }
-
-    public static void main(String[] args) {
-        SparkConfig sc = new SparkConfig();
-        sc.conf();
     }
 
 }

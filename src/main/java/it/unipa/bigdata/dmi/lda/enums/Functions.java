@@ -1,5 +1,8 @@
 package it.unipa.bigdata.dmi.lda.enums;
 
+/**
+ * List of possible functions that can be call by the user.
+ */
 public enum Functions {
     COMPUTE("compute"),
     PREDICT("predict"),
