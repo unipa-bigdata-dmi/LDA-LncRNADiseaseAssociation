@@ -8,6 +8,7 @@ import org.apache.spark.sql.SparkSession;
 
 /**
  * Singleton factory that manages the {@link JavaSparkContext} and {@link SparkSession}.
+ * @author Armando La Placa
  */
 public class SparkFactory {
     private static JavaSparkContext javaSparkContext = null;

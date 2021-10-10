@@ -10,11 +10,17 @@ import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 
+/**
+ * The centrality model is the implementation of our model. It is based on a tripartite graph that uses miRNA as link between lncRNA and diseases.
+ *
+ * @author Armando La Placa
+ */
 class CentralityModel() extends GraphframeAbstractModel() {
   private val logger: Logger = LoggerFactory.getLogger(classOf[CentralityModel])
 
-  /* INTERFACE METHODS */
-
+  /**
+   * If not already loaded, load the predictions from the default resource predictions folder, cache it and return.
+   */
   override def loadPredictions(): Dataset[PredictionFDR] = {
     if (predictions == null) {
       val tmp = sparkSession.read.parquet(s"resources/predictions/${LDACli.getVersion}/centrality_fdr/${LDACli.getAlpha}").withColumnRenamed("PValue", "score")
@@ -24,10 +30,14 @@ class CentralityModel() extends GraphframeAbstractModel() {
         .as[PredictionFDR](Encoders.bean(classOf[PredictionFDR])).cache()
     }
     logger.info(s"Caching Centrality predictions: ${predictions.count()}")
-
     predictions
   }
 
+  /**
+   * Compute the AUC over the predictions.
+   * @see it.unipa.bigdata.dmi.lda.utility.ROCFunction
+   * @see it.unipa.bigdata.dmi.lda.impl.GraphframeAbstractModel
+   */
   override def auc(): BinaryClassificationMetrics = {
     if (predictions == null) {
       logger.info("AUC: loading predictions")
@@ -38,6 +48,10 @@ class CentralityModel() extends GraphframeAbstractModel() {
       .as[PredictionFDR](Encoders.bean(classOf[PredictionFDR])))
   }
 
+
+  /**
+   * Compute the confusion matrix of the predictions, in the format of TP/FP/TN/FN. The result is a DataFrame.
+   */
   override def confusionMatrix(): Dataset[Row] = {
     val scores = loadPredictions().select(col("prediction"), col("gs"))
       .groupBy("gs", "prediction").agg(count("gs").as("count"))
@@ -48,11 +62,18 @@ class CentralityModel() extends GraphframeAbstractModel() {
     scores
   }
 
+  /**
+   * Apply the formula to the lncRNA-disease association, using several neighborhood informations. After computing the first and second term of the formula,
+   * apply the alpha value (default: 0.25), then save the results in CSV format.
+   */
   override def compute(): Dataset[Prediction] = {
+    // Initialize Graphframe
     getGraphFrame()
+    // Retrieve neighborhood informations as DataFrame
     val preliminary: DataFrame = preliminaryComputation
-    // FORMULA BASE
+    // Compute first and second term of the formula
     val (firstTerm, secondTerm) = computeScores(preliminary)
+    // Join first and second term into one dataframe
     val pre_scores = firstTerm
       .join(secondTerm, firstTerm("lncrna").equalTo(secondTerm("lncrna")).and(firstTerm("disease").equalTo(secondTerm("disease"))))
       .drop(secondTerm("lncrna")).drop(secondTerm("disease"))
@@ -61,6 +82,7 @@ class CentralityModel() extends GraphframeAbstractModel() {
     val alpha_ = LDACli.getAlpha
     val GS_broadcast = sparkSession.sparkContext.broadcast(datasetReader.getLncrnaDisease().rdd.map(r => s"${r.getString(0)};${r.getString(1)}").map(pair => pair.toUpperCase().trim()).collect())
     logger.info("Applying alpha to scores")
+    // Apply alpha and return a Dataset of Prediction
     scores = sparkSession.createDataset[Prediction](
       pre_scores
         .withColumn("firstScore", col("firstTerm") * lit(alpha_))
@@ -96,6 +118,9 @@ class CentralityModel() extends GraphframeAbstractModel() {
     scores
   }
 
+  /**
+   * Apply the FDR correction to the computed scores and return the predictions.
+   */
   override def predict(): Dataset[PredictionFDR] = {
     scores = compute()
     predictions = FDRFunction().computeFDR(scores)
@@ -106,6 +131,9 @@ class CentralityModel() extends GraphframeAbstractModel() {
     predictions
   }
 
+  /**
+   * Return the scores from the default folder located at {@code resources/predictions/<hmdd_version>/centrality/}.
+   */
   override def loadScores(): Dataset[Prediction] = {
     if (scores == null)
       scores = sparkSession.read.parquet(s"resources/predictions/${LDACli.getVersion}/centrality/")
@@ -115,8 +143,12 @@ class CentralityModel() extends GraphframeAbstractModel() {
     scores
   }
 
-  /* PRIVATE METHODS */
-
+  /**
+   * This method is the core of the Centrality model. It includes the formula used to compute the scores for the lncRNA-disease associations.
+   * @param preliminary Dataset containing additional informations used for the score computation.
+   * @return Two dataframe containing the first and second term of the formula.
+   *         These terms are multiplied with an alpha factor specified by the user using the {@link it.unipa.bigdata.dmi.lda.enums.CliOption#ALPHA_OPT} argument.
+   */
   private def computeScores(preliminary: DataFrame): (DataFrame, DataFrame) = {
     val firstTerm = preliminary
       .select("lncrna", "disease", "mld", "n")
@@ -131,6 +163,18 @@ class CentralityModel() extends GraphframeAbstractModel() {
     (firstTerm, secondTerm)
   }
 
+  /**
+   * The preliminary computations consist of loading several neighborhood informations from the graphFrame built by the superclass {@link it.unipa.bigdata.dmi.lda.impl.GraphframeAbstractModel}.
+   * These informations consist of:
+   * <ul>
+   *  <li>mld: miRNAs in common between the given lncRNA and disease</li>
+   *  <li>mll: miRNAs in common between two neighbors lncRNA</li>
+   *  <li>nj: miRNAs associated to a specific disease</li>
+   *  <li>mll_xx: miRNAs associated to a specific disease</li>
+   *  <li>n: minimum number of miRNAs between nj and mll</li>
+   * </ul>
+   * @return Dataset containing all the previous fields.
+   */
   private def preliminaryComputation = {
     val mld = graphFrame.find("(mirna)-[]->(lncrna); (mirna)-[]->(disease)").filter("lncrna.type == 'LncRNA' and disease.type == 'Disease' and mirna.type == 'miRNA'")
       .select(col("lncrna.id").as("lncrna"), col("mirna.id").as("mirna"), col("disease.id").as("disease"))

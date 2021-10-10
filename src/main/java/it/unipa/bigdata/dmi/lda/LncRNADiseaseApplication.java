@@ -8,7 +8,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Set;
 
-
+/**
+ * @author Armando La Placa
+ */
 public class LncRNADiseaseApplication {
 
     public static void main(String[] args) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {

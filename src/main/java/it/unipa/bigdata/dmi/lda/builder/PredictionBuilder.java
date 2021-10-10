@@ -5,6 +5,9 @@ import it.unipa.bigdata.dmi.lda.model.Prediction;
 import java.io.Serializable;
 import java.util.Map;
 
+/**
+ * @author Armando La Placa
+ */
 public class PredictionBuilder implements Serializable {
     protected Prediction prediction;
 

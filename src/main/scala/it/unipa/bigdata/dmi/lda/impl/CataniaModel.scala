@@ -16,9 +16,19 @@ import org.apache.spark.sql.types.DoubleType
 
 import scala.collection.mutable.WrappedArray
 
+/**
+ * This model refers to the <b>ncPred</b> model implemented <a href="http://alpha.dmi.unict.it/ncPred/">here</a>. This class doesn't implement the prediction model, but permits to generate
+ * the matrices of miRNA-lncRNA and miRNA-disease associations that are given as input into the implemented model.
+ *
+ * @author Armando La Placa
+ */
 class CataniaModel() extends GraphframeAbstractModel() {
   private val logger: Logger = LoggerFactory.getLogger(classOf[CataniaModel])
 
+  /**
+   * Load the predictions result file into a dataset of {@link it.unipa.bigdata.dmi.lda.model.Prediction}. Save the loaded results as parquet in the given path {@link it.unipa.bigdata.dmi.lda.enums.CliOption#SCORES_PATH_OPT}.
+   * @return The dataset of Prediction loaded from the file located at {@link it.unipa.bigdata.dmi.lda.enums.CliOption#SCORES_PATH_OPT}.
+   */
   private def loadFromFile(): Dataset[Prediction] = {
     import sparkSession.implicits._
     val predictions_raw = sparkSession.sparkContext.textFile(LDACli.getScoresPath)
@@ -82,6 +92,9 @@ class CataniaModel() extends GraphframeAbstractModel() {
     scores
   }
 
+  /**
+   * This method is called inside the methods {@link it.unipa.bigdata.dmi.lda.impl.CataniaModel#compute()} and saves the matrices used by the ncPred model in the root directory.
+   */
   private def createMatrix(): Unit = {
     logger.warn("Creating matrices of mirna-lncrna and mirna-disease ")
     val mirnas = datasetReader.getMiRNA
@@ -94,9 +107,17 @@ class CataniaModel() extends GraphframeAbstractModel() {
     writeFile(diseases, mirnas.select(col("mirna").as("row")).repartition(100), "mirna", "disease", mirna_disease)
   }
 
+  /**
+   * Utility function used to write the dataset, with the header, obtained by combination of two column/row datasets. The file is stored in the root directory.
+   * @param columns Dataset of columns data.
+   * @param rows Dataset of rows data.
+   * @param row Data type as string of the rows. Used to create the header of the file.
+   * @param column Data type as string of the columns. Used to create the header of the file.
+   * @param source Dataset used to filter out the combinations of {@code columns x rows} that don't belong to it.
+   */
   private def writeFile(columns: DataFrame, rows: DataFrame, row: String, column: String, source: DataFrame): Unit = {
-    logger.info(s"Writing matrix ${row}-${column} into 'resources/${row}-${column}.matrix.txt'")
-    val output_file = s"resources/${row}-${column}.matrix.txt"
+    logger.info(s"Writing matrix ${row}-${column} into '${row}-${column}.matrix.txt'")
+    val output_file = s"${row}-${column}.matrix.txt"
     var combinations = rows.crossJoin(columns).repartition(1000)
       .cache()
     logger.info(s"Caching combinations ${combinations.count}")
@@ -128,6 +149,9 @@ class CataniaModel() extends GraphframeAbstractModel() {
 
   }
 
+  /**
+   * If not already loaded, load the predictions from the default resource predictions folder, cache it and return.
+   */
   override def loadPredictions(): Dataset[PredictionFDR] = {
     if (predictions == null) {
       val tmp = sparkSession.read.parquet(s"resources/predictions/${LDACli.getVersion}/catania_fdr/").withColumn("gs", when(col("gs").equalTo(1.0), true).otherwise(false).as("gs"))
@@ -140,6 +164,11 @@ class CataniaModel() extends GraphframeAbstractModel() {
     predictions
   }
 
+  /**
+   * Compute the AUC over the predictions.
+   * @see it.unipa.bigdata.dmi.lda.utility.ROCFunction
+   * @see it.unipa.bigdata.dmi.lda.impl.GraphframeAbstractModel
+   */
   override def auc(): BinaryClassificationMetrics = {
     if (predictions == null) {
       logger.info("AUC: loading predictions")
@@ -150,6 +179,9 @@ class CataniaModel() extends GraphframeAbstractModel() {
       .as[PredictionFDR](Encoders.bean(classOf[PredictionFDR])))
   }
 
+  /**
+   * Compute the confusion matrix of the predictions, in the format of TP/FP/TN/FN. The result is a DataFrame.
+   */
   override def confusionMatrix(): DataFrame = {
     val scores = loadPredictions()
       .select(col("prediction"), when(col("gs").equalTo(1.0), true).otherwise(false).as("gs"))
@@ -161,11 +193,17 @@ class CataniaModel() extends GraphframeAbstractModel() {
     scores
   }
 
+  /**
+   * This method is not implemented. It just recall {@link it.unipa.bigdata.dmi.lda.impl.CataniaModel#createMatrix()} and throws an error.
+   */
   override def compute(): Dataset[Prediction] = {
     createMatrix()
     throw new NotImplementedException("This application doesn't implement the prediction functionality of nPred model. It is possible to create the matrix file to be submitted for the execution of the model.")
   }
 
+  /**
+   * Apply the FDR correction to the computed scores and return the predictions.
+   */
   override def predict(): Dataset[PredictionFDR] = {
     val scores = loadScores()
     predictions = FDRFunction().computeFDR(scores)
@@ -176,6 +214,10 @@ class CataniaModel() extends GraphframeAbstractModel() {
     predictions
   }
 
+  /**
+   * Return the scores from the default folder located at {@code resources/predictions/<hmdd_version>/catania/} or, if {@link it.unipa.bigdata.dmi.lda.enums.CliOption#SCORES_PATH_OPT} is set,
+   * load the scores from the given location.
+   */
   override def loadScores(): Dataset[Prediction] = {
     if (LDACli.getScoresPath != null) {
       scores = loadFromFile()

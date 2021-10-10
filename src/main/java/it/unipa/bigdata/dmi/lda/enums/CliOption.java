@@ -6,6 +6,7 @@ import java.util.Arrays;
 
 /**
  * Options that can be set as arguments for the execution of the application.
+ * @author Armando La Placa
  */
 public enum CliOption {
     /**

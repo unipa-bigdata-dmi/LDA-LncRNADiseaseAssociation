@@ -8,6 +8,11 @@ import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Dataset
 
+/**
+ * Utility function used to compute ROC analysis.
+ *
+ * @author Armando La Placa
+ */
 case class ROCFunction() {
   private val logger: Logger = LoggerFactory.getLogger(classOf[ROCFunction])
 
@@ -18,13 +23,13 @@ case class ROCFunction() {
    * - prediction_score: Double
    * <p>
    * - golden_standard: Double (0.0 => False, 1.0 => True)
-   *
+   *<br>
+   *   After computing the roc analysis, save the plot in a file located in the root directory.
    * @param predictionAndLabels Dataset containing a column of the prediction scores and a column regarding the belonging class
    * @return The metrics used to print the AUC/PR values. Can be used to return the point of the ROC curve.
    */
   def roc(predictionAndLabels: Dataset[PredictionFDR]): BinaryClassificationMetrics = {
     // Instantiate metrics object
-    //    val input = predictionAndLabels.rdd.map(r => (r.getFdr.doubleValue(), if (r.getGs()) 1.0 else 0.0)).cache()
     val input = predictionAndLabels.toDF().rdd.map(r => (r.getDouble(r.fieldIndex(PredictionFDR.getFdrCol.toString())), if (r.getBoolean(r.fieldIndex(Prediction.getGsCol.toString()))) 1.0 else 0.0)).cache()
     input.count()
     val metrics = new BinaryClassificationMetrics(input)
@@ -44,6 +49,10 @@ case class ROCFunction() {
     metrics
   }
 
+  /**
+   * Save the ROC plot in the root directory.
+   * @param dataset RDD of (score, gs).
+   */
   def plot(dataset: RDD[(Double, Double)]): Unit = {
     val results = dataset.map(r => (r._1, if (r._2 == 1.0) true else false)).collect()
     val timePath = java.time.LocalDate.now.toString.replaceAll("-", "")

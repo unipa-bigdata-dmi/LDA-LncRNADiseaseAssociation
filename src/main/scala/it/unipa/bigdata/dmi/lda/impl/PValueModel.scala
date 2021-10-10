@@ -10,9 +10,17 @@ import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{Column, DataFrame, Dataset, Encoders}
 
+/**
+ * This model refers to the <b>HGLDA</b> model provided <a href="https://www.nature.com/articles/srep13186">here</a>.
+ *
+ * @author Armando La Placa
+ */
 class PValueModel() extends GraphframeAbstractModel() {
   private val logger: Logger = LoggerFactory.getLogger(classOf[PValueModel])
 
+  /**
+   * This method implements the model of the authors using Spark as framework.
+   */
   override def compute(): Dataset[Prediction] = {
     getGraphFrame()
     logger.info("pValue compute - getting variables")
@@ -96,6 +104,9 @@ class PValueModel() extends GraphframeAbstractModel() {
     scores
   }
 
+  /**
+   * Apply the FDR correction to the computed scores and return the predictions.
+   */
   override def predict(): Dataset[PredictionFDR] = {
     val scores = compute()
     predictions = FDRFunction().computeFDR(scores)
@@ -106,6 +117,10 @@ class PValueModel() extends GraphframeAbstractModel() {
     predictions
   }
 
+
+  /**
+   * If not already loaded, load the predictions from the default resource predictions folder, cache it and return.
+   */
   override def loadPredictions(): Dataset[PredictionFDR] = {
     if (predictions == null) {
       val tmp = sparkSession.read.parquet(s"resources/predictions/${LDACli.getVersion}/pvalue_fdr/").withColumnRenamed("PValue", "score")
@@ -118,6 +133,12 @@ class PValueModel() extends GraphframeAbstractModel() {
     predictions
   }
 
+  /**
+   * Compute the AUC over the predictions.
+   *
+   * @see it.unipa.bigdata.dmi.lda.utility.ROCFunction
+   * @see it.unipa.bigdata.dmi.lda.impl.GraphframeAbstractModel
+   */
   override def auc(): BinaryClassificationMetrics = {
     if (predictions == null) {
       logger.info("AUC: loading predictions")
@@ -132,6 +153,10 @@ class PValueModel() extends GraphframeAbstractModel() {
     res
   }
 
+
+  /**
+   * Compute the confusion matrix of the predictions, in the format of TP/FP/TN/FN. The result is a DataFrame.
+   */
   override def confusionMatrix(): DataFrame = {
     val cm = loadPredictions().select(col("prediction"), col("gs"))
       .groupBy("gs", "prediction").agg(count("gs").as("count"))
@@ -141,6 +166,9 @@ class PValueModel() extends GraphframeAbstractModel() {
     cm
   }
 
+  /**
+   * Return the scores from the default folder located at {@code resources/predictions/<hmdd_version>/pvalue/}.
+   */
   override def loadScores(): Dataset[Prediction] = {
     if (scores == null)
       scores = sparkSession.read.parquet(s"resources/predictions/${LDACli.getVersion}/pvalue/")

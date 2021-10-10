@@ -11,6 +11,7 @@ import it.unipa.bigdata.dmi.lda.interfaces.ModelInterface;
  * Singleton factory that create the correct model to be used. It uses the parameters set by the user during the execution to provide the correct model.
  *
  * @see LDACli
+ * @author Armando La Placa
  */
 public class ModelFactory {
     private ModelFactory() {

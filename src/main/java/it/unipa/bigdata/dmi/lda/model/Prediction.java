@@ -8,6 +8,7 @@ import java.util.Map;
 
 /**
  * Class containing the prediction scores for the lncRNA-disease associations.
+ * @author Armando La Placa
  */
 public class Prediction implements Serializable {
     protected String lncrna;

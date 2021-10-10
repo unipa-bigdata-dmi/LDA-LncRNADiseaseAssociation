@@ -3,6 +3,9 @@ package it.unipa.bigdata.dmi.lda.interfaces;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 
+/**
+ * @author Armando La Placa
+ */
 public interface DatasetInterface {
     /**
      * @return The dataset of miRNA-lncRNA associations.

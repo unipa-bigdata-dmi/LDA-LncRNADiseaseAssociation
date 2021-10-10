@@ -6,6 +6,12 @@ import org.apache.log4j.Logger
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{Dataset, Encoders}
 
+/**
+ * Utility function used to compute FDR correction.
+ *
+ * @param alpha Default value is 0.05.
+ * @author Armando La Placa
+ */
 case class FDRFunction(alpha: Double = 0.05) {
   val sparkSession = SparkFactory.getSparkSession
   val sqlContext = new org.apache.spark.sql.SQLContext(sparkSession.sparkContext)

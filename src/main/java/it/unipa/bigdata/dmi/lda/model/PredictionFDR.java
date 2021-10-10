@@ -4,6 +4,7 @@ import org.apache.spark.sql.Column;
 
 /**
  * The PredictionFDR class is used for the models that rely on FDR for the predictions.
+ * @author Armando La Placa
  */
 public class PredictionFDR extends Prediction {
     private Double fdr;

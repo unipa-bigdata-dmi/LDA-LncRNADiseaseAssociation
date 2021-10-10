@@ -3,6 +3,7 @@ package it.unipa.bigdata.dmi.lda.enums;
 /**
  * List of the implemented models.
  * @implNote If new models are implemented, add to this list.
+ * @author Armando La Placa
  */
 public enum Model {
     /**

@@ -3,6 +3,7 @@ package it.unipa.bigdata.dmi.lda.enums;
 /**
  * List of HMDD versions.
  * @see <a href="https://www.cuilab.cn/hmdd">CuiLab</a>
+ * @author Armando La Placa
  */
 public enum Version {
     HMDDv2("hmddv2"),

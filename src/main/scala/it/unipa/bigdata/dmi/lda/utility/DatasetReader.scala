@@ -7,6 +7,10 @@ import org.apache.log4j.Logger
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.{Dataset, Row, SparkSession}
 
+/**
+ * Utility class used to extract data from datasets.
+ * @author Armando La Placa
+ */
 class DatasetReader extends DatasetInterface {
   private val sparkSession: SparkSession = SparkFactory.getSparkSession
   val sqlContext = new org.apache.spark.sql.SQLContext(sparkSession.sparkContext)
@@ -80,6 +84,9 @@ class DatasetReader extends DatasetInterface {
     lncRNA_disease_DF
   }
 
+  /**
+   * Get all the possible combinations of lncRNA-disease using lncRNA from datasets miRNA-lncRNA, lncRNA-disease and diseases from datasets miRNA-disease, lncRNA-disease.
+   */
   override def getAllCombination: Dataset[Row] = {
     val lnc = getLncRNA()
     val dis = getDisease()
@@ -91,6 +98,9 @@ class DatasetReader extends DatasetInterface {
     allCombination_DF
   }
 
+  /**
+   * Get all the possible combinations of lncRNA-disease using lncRNA from dataset lncRNA-disease and diseases from dataset lncRNA-disease.
+   */
   override def getGSCombination: Dataset[Row] = {
     if (gsCombination_DF == null) {
       gsCombination_DF = getLncrnaDisease().select("lncrna").rdd.map(row => row.getString(0))

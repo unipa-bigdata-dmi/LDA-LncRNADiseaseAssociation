@@ -4,6 +4,9 @@ import it.unipa.bigdata.dmi.lda.config.LDACli;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+/**
+ * @author Armando La Placa
+ */
 public class LoggerFactory {
     public static Logger getLogger(Class clazz) {
         Logger logger = Logger.getLogger(clazz);

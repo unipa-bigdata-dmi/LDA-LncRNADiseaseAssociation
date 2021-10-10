@@ -4,7 +4,9 @@ import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 
-
+/**
+ * @author Armando La Placa
+ */
 public interface ROCInterface {
 
     /**

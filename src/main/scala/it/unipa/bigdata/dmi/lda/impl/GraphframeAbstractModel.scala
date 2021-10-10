@@ -11,6 +11,11 @@ import org.apache.spark.sql.functions.{col, count, lit}
 import org.apache.spark.sql.{DataFrame, Dataset, Encoders, Row, SparkSession}
 import org.graphframes.GraphFrame
 
+/**
+ * This is a superclass for the models that rely on graphs to be computed. It uses {@link org.graphframes.GraphFrame} to implements graph in Spark.
+ *
+ * @author Armando La Placa
+ */
 abstract class GraphframeAbstractModel() extends ModelInterface {
   private val logger: Logger = LoggerFactory.getLogger(classOf[GraphframeAbstractModel])
   protected val sparkSession: SparkSession = SparkFactory.getSparkSession
@@ -21,6 +26,11 @@ abstract class GraphframeAbstractModel() extends ModelInterface {
   protected val datasetReader: DatasetReader = new DatasetReader()
   protected var graphFrame: GraphFrame = _
 
+  /**
+   * Utility function used to store dataframe as CSV. It automatically obtain the type of model used to create the input DataFrame.
+   * If the argument {@link it.unipa.bigdata.dmi.lda.enums.CliOption#OUTPUT_OPT} is not set, skip the saving.
+   * @param ds DataFrame to store.
+   */
   def saveResults(ds: DataFrame): Unit = {
     val outputPath = LDACli.getOutputPath
     val model = this.getClass.getSimpleName.replace("Model", "").toLowerCase()
@@ -37,6 +47,10 @@ abstract class GraphframeAbstractModel() extends ModelInterface {
     }
   }
 
+  /**
+   * Create the GraphFrame using the miRNA-disease, miRNA-lncRNA and lncRNA-disease combinations.
+   * @return The Graph as GraphFrame.
+   */
   def getGraphFrame(): GraphFrame = {
     if (graphFrame == null) {
       logger.info("Loading GraphFrame - Creating edges")
@@ -76,13 +90,20 @@ abstract class GraphframeAbstractModel() extends ModelInterface {
     loadScores(LDACli.getScoresPath)
   }
 
-
+  /**
+   * Compute the AUC over the predictions.
+   * @see it.unipa.bigdata.dmi.lda.utility.ROCFunction
+   * @see it.unipa.bigdata.dmi.lda.impl.GraphframeAbstractModel
+   */
   override def auc(): BinaryClassificationMetrics = {
     if (predictions == null)
       predictions = loadPredictions()
     auc(predictions)
   }
 
+  /**
+   * Compute the confusion matrix of the predictions, in the format of TP/FP/TN/FN. The result is a DataFrame.
+   */
   override def confusionMatrix(): Dataset[Row] = {
     val cm = loadPredictions().select(col("prediction"), col("gs"))
       .groupBy("gs", "prediction").agg(count("gs").as("count"))
@@ -91,19 +112,28 @@ abstract class GraphframeAbstractModel() extends ModelInterface {
     cm.show(false)
     cm
   }
-
+  /**
+   * Load the scores from the given location.
+   */
   protected def loadScores(path: String): Dataset[Prediction] = {
     scores = sparkSession.read.parquet(path).as[Prediction](Encoders.bean(classOf[Prediction])).cache()
     logger.info(s"Loaded pValue scores: ${scores.count}")
     scores
   }
-
+  /**
+   * Load the predictions from the given location.
+   */
   protected def loadPredictions(path: String): Dataset[PredictionFDR] = {
     predictions = sparkSession.read.parquet(path).as[PredictionFDR](Encoders.bean(classOf[PredictionFDR])).cache()
     logger.info(s"Loaded pValue predictions: ${predictions.count}")
     predictions
   }
 
+  /**
+   * Compute the AUC over the predictions given as parameter.
+   * @see it.unipa.bigdata.dmi.lda.utility.ROCFunction
+   * @see it.unipa.bigdata.dmi.lda.impl.GraphframeAbstractModel
+   */
   def auc(fdr: Dataset[PredictionFDR]): BinaryClassificationMetrics = {
     logger.info("AUC/PR curve")
     val metrics = rocFunction.roc(fdr)

@@ -2,6 +2,9 @@ package it.unipa.bigdata.dmi.lda.builder;
 
 import it.unipa.bigdata.dmi.lda.model.PredictionFDR;
 
+/**
+ * @author Armando La Placa
+ */
 public class PredictionFDRBuilder extends PredictionBuilder {
     private Double fdr;
     private PredictionFDR predictionFDR;

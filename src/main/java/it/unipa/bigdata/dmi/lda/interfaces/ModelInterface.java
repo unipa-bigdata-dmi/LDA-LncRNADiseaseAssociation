@@ -4,6 +4,9 @@ import it.unipa.bigdata.dmi.lda.model.Prediction;
 import it.unipa.bigdata.dmi.lda.model.PredictionFDR;
 import org.apache.spark.sql.Dataset;
 
+/**
+ * @author Armando La Placa
+ */
 public interface ModelInterface extends ROCInterface {
 
     /**

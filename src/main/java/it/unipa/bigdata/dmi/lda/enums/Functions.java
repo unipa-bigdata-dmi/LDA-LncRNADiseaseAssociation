@@ -2,6 +2,7 @@ package it.unipa.bigdata.dmi.lda.enums;
 
 /**
  * List of possible functions that can be call by the user.
+ * @author Armando La Placa
  */
 public enum Functions {
     COMPUTE("compute"),
