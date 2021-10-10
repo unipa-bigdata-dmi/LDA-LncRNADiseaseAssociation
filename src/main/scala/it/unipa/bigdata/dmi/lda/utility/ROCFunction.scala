@@ -1,9 +1,11 @@
 package it.unipa.bigdata.dmi.lda.utility
 
+import be.cylab.java.roc.Roc
 import it.unipa.bigdata.dmi.lda.factory.LoggerFactory
 import it.unipa.bigdata.dmi.lda.model.{Prediction, PredictionFDR}
 import org.apache.log4j.Logger
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Dataset
 
 case class ROCFunction() {
@@ -22,7 +24,7 @@ case class ROCFunction() {
    */
   def roc(predictionAndLabels: Dataset[PredictionFDR]): BinaryClassificationMetrics = {
     // Instantiate metrics object
-//    val input = predictionAndLabels.rdd.map(r => (r.getFdr.doubleValue(), if (r.getGs()) 1.0 else 0.0)).cache()
+    //    val input = predictionAndLabels.rdd.map(r => (r.getFdr.doubleValue(), if (r.getGs()) 1.0 else 0.0)).cache()
     val input = predictionAndLabels.toDF().rdd.map(r => (r.getDouble(r.fieldIndex(PredictionFDR.getFdrCol.toString())), if (r.getBoolean(r.fieldIndex(Prediction.getGsCol.toString()))) 1.0 else 0.0)).cache()
     input.count()
     val metrics = new BinaryClassificationMetrics(input)
@@ -37,6 +39,17 @@ case class ROCFunction() {
     // AUROC
     val auROC = metrics.areaUnderROC
     logger.info(s"Area under ROC = $auROC")
+    // Plot
+    plot(input)
     metrics
+  }
+
+  def plot(dataset: RDD[(Double, Double)]): Unit = {
+    val results = dataset.map(r => (r._1, if (r._2 == 1.0) true else false)).collect()
+    val timePath = java.time.LocalDate.now.toString.replaceAll("-", "")
+    val scores = results.map(r => r._1)
+    val gs = results.map(r => r._2)
+    val roc_plot = new Roc(scores, gs)
+    roc_plot.computeRocPointsAndGenerateCurve(s"${timePath}_roc_plot.png")
   }
 }
