@@ -51,9 +51,10 @@ case class ROCFunction() {
   
   def plot(dataset:RDD[(Double,Double)]):Unit = {
     val results = dataset.map(r=> (r._1,if (r._2==1.0) true else false)).collect()
+    val timePath = java.time.LocalDate.now.toString.replaceAll("-", "")
     val scores = results.map(r => r._1)
     val gs = results.map(r=>r._2)
     val roc_plot = new Roc(scores,gs)
-    roc_plot.computeRocPointsAndGenerateCurve("resources/roc_plot.png")
+    roc_plot.computeRocPointsAndGenerateCurve(s"${timePath}_roc_plot.png")
   }
 }
