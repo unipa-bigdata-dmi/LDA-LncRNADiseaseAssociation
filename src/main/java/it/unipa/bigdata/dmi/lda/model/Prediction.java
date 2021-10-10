@@ -6,11 +6,20 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Class containing the prediction scores for the lncRNA-disease associations.
+ */
 public class Prediction implements Serializable {
     protected String lncrna;
     protected String disease;
     protected Double score;
+    /**
+     * {@code True} if the lncRNA-disease association belong to the Gold Standard dataset, {@code False} otherwise.
+     */
     protected Boolean gs;
+    /**
+     * Additional parameters used for debugging or model analysis.
+     */
     protected Map<String, String> parameters = new HashMap<>();
 
     public String getLncrna() {
