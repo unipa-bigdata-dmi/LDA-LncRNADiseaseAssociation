@@ -2,6 +2,9 @@ package it.unipa.bigdata.dmi.lda.model;
 
 import org.apache.spark.sql.Column;
 
+/**
+ * The PredictionFDR class is used for the models that rely on FDR for the predictions.
+ */
 public class PredictionFDR extends Prediction {
     private Double fdr;
     private Boolean prediction;

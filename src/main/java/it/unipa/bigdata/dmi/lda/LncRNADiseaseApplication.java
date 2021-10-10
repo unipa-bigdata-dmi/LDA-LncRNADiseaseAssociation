@@ -3,7 +3,6 @@ package it.unipa.bigdata.dmi.lda;
 import it.unipa.bigdata.dmi.lda.config.LDACli;
 import it.unipa.bigdata.dmi.lda.enums.Functions;
 import it.unipa.bigdata.dmi.lda.interfaces.ModelInterface;
-import org.apache.commons.cli.ParseException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -12,7 +11,7 @@ import java.util.Set;
 
 public class LncRNADiseaseApplication {
 
-    public static void main(String[] args) throws ParseException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public static void main(String[] args) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         // Load user inputs
         ModelInterface model = LDACli.getParsedModel(args);
         if (model != null) {
