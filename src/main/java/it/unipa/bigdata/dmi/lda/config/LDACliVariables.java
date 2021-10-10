@@ -15,24 +15,99 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * This class stores the arguments given by the user. It is managed by {@link LDACli} and its values are set during the initialization.
+ *
+ * @author Armando La Placa
+ * @see LDACli
+ * @see CliOption
+ */
 public class LDACliVariables {
+    /**
+     * The path of the prediction to load in parquet format.
+     *
+     * @see LDACli#getPredictionPath()
+     */
     private String predictionPath = null;
+    /**
+     * The path of the scores to laod in parquet format.
+     *
+     * @see LDACli#getScoresPath()
+     */
     private String scoresPath = null;
+    /**
+     * The path of the CSV dataset of miRNA-disease associations. See the README of the project for more details.
+     *
+     * @see LDACli#getMdPath()
+     */
     private String mdPath = null;
+    /**
+     * The path of the CSV dataset of miRNA-lncRNA associations. See the README of the project for more details.
+     *
+     * @see LDACli#getMlPath()
+     */
     private String mlPath = null;
+    /**
+     * The path of the CSV dataset of lncRNA-disease associations. See the README of the project for more details.
+     *
+     * @see LDACli#getLdPath() ()
+     */
     private String ldPath = null;
+    /**
+     * The alpha value used by the centrality model for the score computation. See the README of the project for more details.
+     *
+     * @see LDACli#getAlpha()
+     * @see it.unipa.bigdata.dmi.lda.impl.CentralityModel
+     */
     private Double alpha = null;
+    /**
+     * The chosen model used for the prediction and score computations. See the README of the project for more details.
+     *
+     * @see Model
+     * @see LDACli#getModel()
+     * @see it.unipa.bigdata.dmi.lda.impl.CataniaModel
+     * @see it.unipa.bigdata.dmi.lda.impl.CentralityModel
+     * @see it.unipa.bigdata.dmi.lda.impl.PValueModel
+     */
     private Model model = null;
+    /**
+     * The version of the miRNA-disease dataset. See the README of the project for more details.
+     *
+     * @see Version
+     * @see LDACli#getVersion()
+     */
     private Version version = null;
+    /**
+     * Set the log level for the application and Apache Spark workers.
+     *
+     * @see Level
+     * @see LDACli#getLogLevel()
+     */
     private Level logLevel = null;
+    /**
+     * The path where to store the results of the predictions and scores computed by the models.
+     *
+     * @see LDACli#getOutputPath()
+     */
     private String outputPath = null;
+    /**
+     * The number of partitions used to store the CSV results files.
+     *
+     * @see LDACli#getOutputPartitions()
+     */
     private Integer outputPartitions = null;
+    /**
+     * The set of functions the user want to execute.
+     *
+     * @see Functions
+     * @see LDACli#getFunction()
+     */
     private Set<Functions> function = null;
 
     /**
-     * Construct an object using the options of the user input.
+     * Construct an object using the options of the user input. It uses the enums {@link CliOption} to determine which option is provided by the user during execution.
      *
-     * @param options User inputs
+     * @param options User inputs given as parameters during the execution.
      */
     public LDACliVariables(Option[] options) {
         Arrays.stream(options).forEach(option -> {
@@ -109,6 +184,7 @@ public class LDACliVariables {
                     break;
                 default:
                     break;
+                //TODO: add HERE further cli options
             }
         });
     }
@@ -117,11 +193,6 @@ public class LDACliVariables {
         return predictionPath;
     }
 
-    /**
-     * Return the alpha parameter used for the Centrality model.
-     *
-     * @return Alpha parameter (0.25 default).
-     */
     public Double getAlpha() {
         return alpha;
     }
@@ -166,6 +237,10 @@ public class LDACliVariables {
         return outputPartitions;
     }
 
+    /**
+     * Print the variables that are not {@code null} in format: {@code var: 'value'}.
+     * @return The string of variables separated by a break line.
+     */
     @Override
     public String toString() {
         return Arrays.stream(this.getClass().getDeclaredFields()).filter(field -> {
