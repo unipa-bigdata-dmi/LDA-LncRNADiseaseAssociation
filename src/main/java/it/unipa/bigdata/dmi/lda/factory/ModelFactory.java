@@ -6,14 +6,24 @@ import it.unipa.bigdata.dmi.lda.impl.CentralityModel;
 import it.unipa.bigdata.dmi.lda.impl.GraphframeModel;
 import it.unipa.bigdata.dmi.lda.impl.PValueModel;
 import it.unipa.bigdata.dmi.lda.interfaces.ModelInterface;
-import org.apache.commons.lang.NotImplementedException;
 
+/**
+ * Singleton factory that create the correct model to be used. It uses the parameters set by the user during the execution to provide the correct model.
+ *
+ * @see LDACli
+ */
 public class ModelFactory {
     private ModelFactory() {
         super();
     }
 
-    public static ModelInterface getModel() throws IllegalArgumentException, NotImplementedException {
+    /**
+     * Return the correct model using the parameters given by the user. If the {@link it.unipa.bigdata.dmi.lda.enums.CliOption#PREDICTION_PATH_OPT} is set, return a generci {@link GraphframeModel}.
+     *
+     * @return An implementation of the {@link ModelInterface}.
+     * @throws IllegalArgumentException If the user specified a model which is not included in {@link it.unipa.bigdata.dmi.lda.enums.Model}.
+     */
+    public static ModelInterface getModel() throws IllegalArgumentException {
         if (LDACli.getPredictionPath() != null) {
             return new GraphframeModel();
         }

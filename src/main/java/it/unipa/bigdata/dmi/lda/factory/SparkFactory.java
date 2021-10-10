@@ -6,6 +6,9 @@ import org.apache.log4j.Level;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
 
+/**
+ * Singleton factory that manages the {@link JavaSparkContext} and {@link SparkSession}.
+ */
 public class SparkFactory {
     private static JavaSparkContext javaSparkContext = null;
     private static SparkSession sparkSession = null;
