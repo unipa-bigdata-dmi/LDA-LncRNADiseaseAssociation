@@ -4,7 +4,6 @@ import it.unipa.bigdata.dmi.lda.config.LDACli;
 import it.unipa.bigdata.dmi.lda.enums.Functions;
 import it.unipa.bigdata.dmi.lda.interfaces.ModelInterface;
 import org.apache.commons.cli.ParseException;
-import org.apache.log4j.Logger;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

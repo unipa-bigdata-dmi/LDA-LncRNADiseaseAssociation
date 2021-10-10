@@ -3,7 +3,6 @@ package it.unipa.bigdata.dmi.lda.builder;
 import it.unipa.bigdata.dmi.lda.model.Prediction;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
 public class PredictionBuilder implements Serializable {

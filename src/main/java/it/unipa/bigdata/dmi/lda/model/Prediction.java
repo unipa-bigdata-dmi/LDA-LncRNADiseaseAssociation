@@ -1,6 +1,7 @@
 package it.unipa.bigdata.dmi.lda.model;
 
 import org.apache.spark.sql.Column;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
