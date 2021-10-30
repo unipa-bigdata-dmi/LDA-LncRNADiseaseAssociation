@@ -148,6 +148,8 @@ class PValueModel() extends GraphframeAbstractModel() {
     val aucInput = predictions.withColumn("fdr", lit(1) - col("fdr") as "fdr")
       .as[PredictionFDR](Encoders.bean(classOf[PredictionFDR])).cache()
     aucInput.count()
+    saveResults(predictions
+      .select("lncrna", "disease", "score", "fdr", "gs", "prediction"))
     val res = auc(aucInput)
     aucInput.unpersist()
     res

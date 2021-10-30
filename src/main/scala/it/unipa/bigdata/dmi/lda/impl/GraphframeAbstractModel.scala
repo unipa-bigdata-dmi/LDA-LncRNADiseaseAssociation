@@ -36,14 +36,14 @@ abstract class GraphframeAbstractModel() extends ModelInterface {
     val model = this.getClass.getSimpleName.replace("Model", "").toLowerCase()
     if (outputPath != null) {
       val outputPartitions = LDACli.getOutputPartitions
-      val timePath = java.time.LocalDate.now.toString.replaceAll("-", "")
       val claz = Thread.currentThread.getStackTrace()(2).getMethodName
-      logger.info(s"Saving ${model}_${claz} into '${outputPath}${timePath}/${model}_${claz}' with ${outputPartitions} partitions")
+      logger.info(s"Saving ${model}_${claz} into '${outputPath}${model}_${claz}' with ${outputPartitions} partitions")
       ds
         .coalesce(outputPartitions)
+        .sort(col("lncrna").asc,col("disease").asc)
         .write
         .option("header", "true")
-        .csv(s"${outputPath}${timePath}/${model}_${claz}")
+        .csv(s"${outputPath}${model}_${claz}")
     }
   }
 
