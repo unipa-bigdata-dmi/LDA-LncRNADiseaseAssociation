@@ -28,3 +28,12 @@ The execution of the jar via terminal is done with this command:
 java -jar ./target/lda.jar <arguments>
 ```
 There are several arguments that can be used. For more information use the argument `-h`. Using the `-h` argument will print the helper, ignoring the other arguments. If no arguments are specified, the helper will be shown automatically.
+
+#### Example of execution with results save in specified output
+An example of execution is:
+
+```
+java -jar ./target/lda.jar -f auc -m pvalue -o C:\\<user>\Documents\result_folder
+```
+
+will execute the software with model pValue and will save the results of predictions in the given folder. The output consists of a csv with header sorted alphabetically by couple lncRNA-disease.

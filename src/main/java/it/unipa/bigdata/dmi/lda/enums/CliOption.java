@@ -103,7 +103,7 @@ public enum CliOption {
             .longOpt("mirnaLncrnaPath")
             .argName("parquet path")
             .hasArg()
-            .desc("csv path for the dataset of miRNA-lncRNA associations. See README for file format.")
+            .desc("csv path for where to load  the dataset of miRNA-lncRNA associations. See README for file format.")
             .required(false)
             .build()),
     /**
@@ -113,7 +113,7 @@ public enum CliOption {
             .longOpt("mirnaDiseasePath")
             .hasArg()
             .argName("parquet path")
-            .desc("csv path for the dataset of miRNA-disease associations. See README for file format.")
+            .desc("csv path for where to load the dataset of miRNA-disease associations. See README for file format.")
             .required(false)
             .build()),
     /**
@@ -123,7 +123,7 @@ public enum CliOption {
             .longOpt("lncrnaDiseasePath")
             .hasArg()
             .argName("parquet path")
-            .desc("csv path for the dataset of lncRNA-disease associations. See README for file format.")
+            .desc("csv path for where to load  the dataset of lncRNA-disease associations. See README for file format.")
             .required(false)
             .build()),
     /**
