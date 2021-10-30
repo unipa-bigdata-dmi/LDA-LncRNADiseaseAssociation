@@ -18,7 +18,12 @@
 	\maketitle
 %	\tableofcontents
 	\section{Datasets}
-	\blindtext
+	LDA creates a tripartite graph using several data from heterogeneous sources. Three kind of data are used, namely \textit{Long non-coding RNA} (lncRNA), \textit{Micro RNA} (miRNA) and \textit{diseases}.  In order to create the tripartite graph, three datasets are used:
+	\begin{itemize}
+		\item \textbf{HMDD version 2 and 3.2}: this dataset contains miRNA-disease associations. \\\textit{Version 2 (January 2015)} has 495 distinct miRNA, 380 distinct diseases and 5425 distinct associations. \\\textit{Version 3.2 (March 2019)} contains 1206 miRNA, 894 diseases and 18732 associations. The datasets are available at \url{http://www.cuilab.cn/hmdd#fragment-4}. Since version 3.2 contains some terms update, it is necessary to map the values to version 2. This procedure is necessary in order to correctly use the dataset of lncRNA-disease associations. The mapping results consists of 1058 miRNAs, 885 diseases and 16904 associations. The mapping is available here \url{http://www.cuilab.cn/static/hmdd3/data/disease_mapping2019.txt}.
+		\item \textbf{starBase 2.0}: this dataset contains 10112 miRNA-lncRNA associations, obtained from 275 miRNAs and 1114 lncRNAs. The dataset is available at \url{https://static-content.springer.com/esm/art%3A10.1038%2Fsrep13186/MediaObjects/41598_2015_BFsrep13186_MOESM5_ESM.xls}.
+		\item \textbf{LncRNADisease}: this dataset contains 183 lncRNA-disease associations, from 35 lncRNA and 75 diseases. This dataset is our \textbf{gold standard} and it is available at \url{https://static-content.springer.com/esm/art%3A10.1038%2Fsrep13186/MediaObjects/41598_2015_BFsrep13186_MOESM6_ESM.xls}. Using dataset HMDD version 3.2, the mapping of diseases to version 2.0 will lower the number of associations from 183 to 179, since 4 diseases cannot be mapped to older versions.
+	\end{itemize}
 	\section{Models}
 	\blindtext
 	\section{Results}	
