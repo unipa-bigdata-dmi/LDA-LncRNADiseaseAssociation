@@ -153,10 +153,14 @@ class CentralityModel() extends GraphframeAbstractModel() {
     val firstTerm = preliminary
       .select("lncrna", "disease", "mld", "n")
       .distinct
+      //.withColumn("firstTerm", col("mld") / col("unione_num"))
       .withColumn("firstTerm", col("mld") / col("n"))
+  
+    
 
     val secondTerm = preliminary
       .groupBy("lncrna", "disease")
+      //.agg(col("intersez_num").as("numeratore"), col("unione_den").as("denominatore"))
       .agg(sum(col("mll[i,x]") * col("mld[x,j]")).as("numeratore"), sum(col("mll[x,x]") * col("nj")).as("denominatore"))
       .withColumn("secondTerm", col("numeratore") / col("denominatore"))
 
@@ -176,6 +180,7 @@ class CentralityModel() extends GraphframeAbstractModel() {
    * @return Dataset containing all the previous fields.
    */
   private def preliminaryComputation = {
+      
     val mld = graphFrame.find("(mirna)-[]->(lncrna); (mirna)-[]->(disease)").filter("lncrna.type == 'LncRNA' and disease.type == 'Disease' and mirna.type == 'miRNA'")
       .select(col("lncrna.id").as("lncrna"), col("mirna.id").as("mirna"), col("disease.id").as("disease"))
       .distinct
@@ -183,7 +188,7 @@ class CentralityModel() extends GraphframeAbstractModel() {
       .repartition(2400)
       .cache()
     logger.info(s"Caching ${mld.count} MLD")
-    val mll = graphFrame.find("(mirna)-[]->(lncrna); (mirna)-[]->(lncrna2)").filter("lncrna.type == 'LncRNA' and lncrna2.type == 'LncRNA' and mirna.type == 'miRNA'")
+    var mll = graphFrame.find("(mirna)-[]->(lncrna); (mirna)-[]->(lncrna2)").filter("lncrna.type == 'LncRNA' and lncrna2.type == 'LncRNA' and mirna.type == 'miRNA'")
       .select(col("lncrna.id").as("lncrna"), col("mirna.id").as("mirna"), col("lncrna2.id").as("lncrna2"))
       .distinct
       .groupBy("lncrna", "lncrna2").agg(count("mirna").as("mll"))
@@ -200,11 +205,40 @@ class CentralityModel() extends GraphframeAbstractModel() {
     val mll_xx = mll.filter("lncrna == lncrna2").select(col("lncrna"), col("mll").as("mll_xx")).cache()
     logger.info(s"Caching ${mll_xx.count} MLL[x,x]")
     logger.info("Computing scores")
+     
+    mll = mll.filter("lncrna!=lncrna2")     
+   
+    /*
+     *  ///calcolo l'unione dei mirna
+    val mirna_num = //nj.union(mll_xx)//denominatore primo valore
+    graphFrame.find("(mirna)-[]->(disease)").filter("disease.type == 'Disease' and mirna.type == 'miRNA'")
+      .select(col("mirna.id").as("mirna"), col("disease.id").as("disease"))
+      .distinct
+      .groupBy("disease").agg(count("mirna").as("mirna_num"))
+      .repartition(18)
+      .cache()
+    val mirna2_num = //nj.union(mll_xx)//denominatore primo valore
+    graphFrame.find("(mirna)-[]->(lncrna)").filter("lncrna.type == 'LncRNA' and mirna.type == 'miRNA'")
+      .select( col("lncrna.id").as("LncRNA"),col("mirna.id").as("mirna"))
+      .distinct
+      .groupBy("lncrna").agg(count("mirna").as("mirna2_num"))
+      .repartition(18)
+      .cache()
+    val nj =mirna_num.union(mirna2_num);
+    logger.info(s"Caching ${nj.count} nj")  
+    
+    //val intersez_num = mll.intersect(nj) // numeratore secondo valore
+    //val unione_den = mll.intersect(nj) //denominatore secondo valore
+       
+     * 
+     */
+    
     val all_combination = datasetReader.getAllCombination
     val step0 = all_combination.join(mld, mld("lncrna").equalTo(all_combination("lncrna")).and(mld("disease").equalTo(all_combination("disease"))), "fullOuter")
       .drop(mld("lncrna")).drop(mld("disease")).na.fill(0, Seq("mld")).cache()
     logger.info(s"Caching step0 ${step0.count}")
 
+   
     val step1 = step0.join(broadcast(nj), step0("disease").equalTo(nj("disease")), "fullOuter")
       .drop(nj("disease"))
       .na.fill(0, Seq("nj")).cache()
@@ -232,6 +266,8 @@ class CentralityModel() extends GraphframeAbstractModel() {
 
     val step4 = step3.withColumn("n", least(col("nj"), col("mll[i,i]"))).cache()
     logger.info(s"Caching step4 ${step4.count}")
+   
+    
     step1.unpersist()
     step2.unpersist()
     step3.unpersist()

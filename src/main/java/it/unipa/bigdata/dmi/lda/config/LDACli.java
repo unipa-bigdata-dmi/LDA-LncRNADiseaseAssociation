@@ -138,7 +138,7 @@ public class LDACli {
      * @see it.unipa.bigdata.dmi.lda.impl.CentralityModel
      */
     public static Double getAlpha() {
-        return variables.getAlpha() == null ? 0.25 : variables.getAlpha();
+        return variables.getAlpha() == null ? 0.50 : variables.getAlpha();
     }
 
     /**
